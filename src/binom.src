@@ -1,10 +1,32 @@
-LIT 0
-SET 15           ; [15]: constant 0
+LIT str
+SET 1
+GET 1
+loop
+OUT
+LIT -1
+SUB 1
+SET 1
+GET 1
+JNZ loop
+
 INP
 SET 4
 LIT 48
-SUB 1
+SUB 4
 SET 4            ; [4]: number of rows (1-9)
+
+; If the # of rows is not in 1-9, default to 10
+JNZ check-limit
+reset
+LIT 10
+SET 4
+JNZ start
+check-limit
+LIT 10
+CGT 4
+JNZ reset
+
+start
 LIT 0
 SET 5            ; [5]: current row
 outer
@@ -12,9 +34,12 @@ outer
 ; First print the current state of the row
 
 LIT 0
-SET 6            ; [6]: current col (0..)
+SET 15           ; [15]: constant 0
+SET 6            ; [6]: current col
 print-loop
 LIT row
+SUB 15
+SUB 6
 SET 7            ; [7]: current number address
 GET 7
 SET 1
@@ -89,17 +114,36 @@ LIT 10
 OUT
 
 ; Now create the next row
-LIT row
-SET 8           ; [8]: previous number address
-LIT -1
-SUB row
-SET 9           ; [9]: current number address
-GET 9
-SET 10          ; [10]: old number
-GET 8
+LIT row+1
+SET 7            ; [7]: current number address
+LIT 1
+SET 8            ; [8]: old number
+SET 6            ; [6]: current col
+inner
+CGT 5
+JNZ continue
+LIT 1
+JNZ next-row
+continue
+GET 7
+SET 9            ; [9]: temp storage
 SUB 15
-SUB 10
-SET 9
+SUB 8
+PUT 7
+LIT 9            ; update [8]
+GET 0
+SET 8
+LIT -1           ; increase [7]
+SUB 7
+SET 7
+LIT -1           ; increase [6]
+SUB 6
+SET 6
+JNZ inner
+
+next-row
+LIT 1
+PUT 7
 
 LIT -1
 SUB 5
@@ -111,3 +155,7 @@ END
 
 row
 DAT 1
+row+1
+str
+STR [1-9]:
+DAT 32 32 0

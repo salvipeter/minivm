@@ -4,15 +4,16 @@ BEGIN {
     for (i = 0; i < 256; i++)
         ord[sprintf("%c", i)] = i
 }
-/^GET/ { m[p++] = 0; m[p++] = $2; next }
-/^SET/ { m[p++] = 1; m[p++] = $2; next }
-/^LIT/ { m[p++] = 2; m[p++] = $2; next }
-/^SUB/ { m[p++] = 3; m[p++] = $2; next }
-/^CGT/ { m[p++] = 4; m[p++] = $2; next }
-/^JNZ/ { m[p++] = 5; m[p++] = $2; next }
-/^INP/ { m[p++] = 6;              next }
-/^OUT/ { m[p++] = 7;              next }
-/^END/ { m[p++] = 8;              next }
+/^LIT/ { m[p++] = 0; m[p++] = $2; next }
+/^GET/ { m[p++] = 1; m[p++] = $2; next }
+/^SET/ { m[p++] = 2; m[p++] = $2; next }
+/^PUT/ { m[p++] = 3; m[p++] = $2; next }
+/^SUB/ { m[p++] = 4; m[p++] = $2; next }
+/^CGT/ { m[p++] = 5; m[p++] = $2; next }
+/^JNZ/ { m[p++] = 6; m[p++] = $2; next }
+/^INP/ { m[p++] = 7;              next }
+/^OUT/ { m[p++] = 8;              next }
+/^END/ { m[p++] = 9;              next }
 /^STR/ {
     n = split($0, s, "")
     for (i = 5; i <= n; i++)

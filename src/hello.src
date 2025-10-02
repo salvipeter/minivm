@@ -6,8 +6,8 @@
 
 LIT hello         ; take the address of 'hello'
 SET 1             ; ... and put it in [1]
-loop
 GET 1             ; take [[1]] (i.e., the value at [1])
+loop
 OUT               ; ... and print
 LIT -1
 SUB 1             ; add 1 to [1]
