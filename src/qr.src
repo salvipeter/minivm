@@ -1,0 +1,72 @@
+LIT 0
+SET 9            ; [9]: constant 0
+LIT data
+SET 3            ; [3]: current addr
+LIT 0
+SET 1            ; [1]: row
+
+outer
+LIT 0
+SET 2            ; [2]: col
+
+inner
+GET 3
+SET 5            ; [5]: current byte
+LIT 8
+SET 4            ; [4]: bit-counter
+
+bit
+LIT 128
+CGT 5
+JNZ filled
+LIT 32
+JNZ print
+filled
+LIT 35
+print
+OUT
+OUT
+LIT 5
+GET 0
+SUB 9
+SUB 5
+SET 5
+LIT 1
+SUB 4
+SET 4
+JNZ bit
+
+LIT -1
+SUB 3
+SET 3
+LIT -1
+SUB 2
+SET 2
+SUB width
+JNZ inner
+
+LIT 10
+OUT
+
+LIT -1
+SUB 1
+SET 1
+SUB height
+JNZ outer
+
+END
+
+; Image data
+width
+DAT 4
+height
+DAT 32
+data
+DAT 0 0 0 0 0 0 0 0 63 147 164 254 32 142 236 130
+DAT 46 187 136 186 46 157 136 186 46 136 220 186 32 145 86 130
+DAT 63 170 170 254 0 59 188 0 59 236 147 136 46 108 186 146
+DAT 46 241 9 174 22 100 80 100 2 162 113 150 31 23 51 146
+DAT 37 166 160 182 22 75 187 148 32 244 246 214 15 4 185 154
+DAT 35 153 1 102 27 84 87 244 45 242 119 224 0 55 54 46
+DAT 63 182 134 182 32 163 250 52 46 188 243 230 46 156 186 110
+DAT 46 185 28 114 32 164 55 36 63 162 127 102 0 0 0 0
