@@ -1,0 +1,35 @@
+#!/bin/env -S LC_ALL=C awk -f
+BEGIN {
+    p = 16
+    for (i = 0; i < 256; i++)
+        ord[sprintf("%c", i)] = i
+}
+/^GET/ { m[p++] = 0; m[p++] = $2; next }
+/^SET/ { m[p++] = 1; m[p++] = $2; next }
+/^LIT/ { m[p++] = 2; m[p++] = $2; next }
+/^SUB/ { m[p++] = 3; m[p++] = $2; next }
+/^CGT/ { m[p++] = 4; m[p++] = $2; next }
+/^JNZ/ { m[p++] = 5; m[p++] = $2; next }
+/^INP/ { m[p++] = 6;              next }
+/^OUT/ { m[p++] = 7;              next }
+/^END/ { m[p++] = 8;              next }
+/^STR/ {
+    n = split($0, s, "")
+    for (i = 5; i <= n; i++)
+        m[p++] = ord[s[i]]
+    next
+}
+/^DAT/ {
+    for (i = 2; i <= NF; i++)
+        m[p++] = $i
+    next
+}
+/^;/ { next }
+NF >= 1 { labels[$1] = p }
+END {
+    for (i = 16; i < p; i++)
+        if (m[i] ~ /^[-+]?[0-9]+$/)
+            printf("%c", (m[i] + 256) % 256)
+        else
+            printf("%c", labels[m[i]])
+}

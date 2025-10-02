@@ -1,0 +1,20 @@
+; Lines starting with semicolons are comments
+; and everything after the required argument (if any) is ignored.
+; STR is a new keyword: everything after it is saved verbatim.
+; DAT is a new keyword: it is followed by numbers saved as data.
+; If a line does not start with a keyword its first word is a label.
+
+LIT hello         ; take the address of 'hello'
+SET 1             ; ... and put it in [1]
+loop
+GET 1             ; take [[1]] (i.e., the value at [1])
+OUT               ; ... and print
+LIT -1
+SUB 1             ; add 1 to [1]
+SET 1             ; ... and put it in [1]
+GET 0
+JNZ loop          ; jump back if [[0]] (the next character) is not 0
+END
+hello
+STR Hello World!
+DAT 10 0

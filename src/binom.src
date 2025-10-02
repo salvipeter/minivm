@@ -1,0 +1,113 @@
+LIT 0
+SET 15           ; [15]: constant 0
+INP
+SET 4
+LIT 48
+SUB 1
+SET 4            ; [4]: number of rows (1-9)
+LIT 0
+SET 5            ; [5]: current row
+outer
+
+; First print the current state of the row
+
+LIT 0
+SET 6            ; [6]: current col (0..)
+print-loop
+LIT row
+SET 7            ; [7]: current number address
+GET 7
+SET 1
+
+; Output a number in [1] (destroyed in the process)
+; [2]: hundreds
+; [3]: tens
+LIT 0
+SET 2
+SET 3
+hundreds
+LIT 100
+CGT 1
+JNZ >99
+LIT 2
+GET 0
+JNZ write-hundreds
+LIT 1
+JNZ tens
+write-hundreds
+LIT -48
+SUB 2
+OUT
+LIT 1
+JNZ tens
+>99
+LIT 100
+SUB 1
+SET 1
+LIT -1
+SUB 2
+SET 2
+JNZ hundreds
+tens
+LIT 10
+CGT 1
+JNZ >9
+LIT 3
+GET 0
+JNZ write-tens
+LIT 1
+JNZ ones
+write-tens
+LIT -48
+SUB 3
+OUT
+LIT 1
+JNZ ones
+>9
+LIT 10
+SUB 1
+SET 1
+LIT -1
+SUB 3
+SET 3
+JNZ tens
+ones
+LIT -48
+SUB 1
+OUT
+
+LIT 32
+OUT
+
+LIT -1
+SUB 6
+SET 6
+CGT 5
+JNZ print-loop
+
+LIT 10
+OUT
+
+; Now create the next row
+LIT row
+SET 8           ; [8]: previous number address
+LIT -1
+SUB row
+SET 9           ; [9]: current number address
+GET 9
+SET 10          ; [10]: old number
+GET 8
+SUB 15
+SUB 10
+SET 9
+
+LIT -1
+SUB 5
+SET 5
+SUB 4
+JNZ outer
+
+END
+
+row
+DAT 1
