@@ -1,0 +1,187 @@
+; Recursive functions can be emulated by keeping track of
+; the return address of each frame, and the current frame number.
+; Here we use [1] for the latter, and [2]..[10] for the former.
+
+; The trick is to use self-modifying code, rewriting the address
+; after the JNZ instruction to that of the current return address
+; (see related code at the end of this program).
+
+; Print welcome message
+LIT str
+SET 1
+GET 1
+loop
+OUT
+LIT -1
+SUB 1
+SET 1
+GET 1
+JNZ loop
+
+INP
+SET 15
+LIT 48
+SUB 15
+SET 15           ; [15]: number of disks (1-8)
+
+; If the # of rows is not in 1-8, default to 3
+JNZ check-limit
+reset
+LIT 3
+SET 15
+JNZ start
+check-limit
+LIT 9
+CGT 15
+JNZ reset
+
+start
+
+LIT 2
+SET 1            ; current frame = 2
+LIT 65
+SET 11
+LIT 67
+SET 12
+LIT 66
+SET 13
+LIT over         ; set return address to over
+PUT 1
+JNZ hanoi        ; call the recursive function and exit
+over
+END
+
+;======================================================
+; Recursive function
+; - [15]: size
+; - [11]..[13]: name of rod 1..3
+;======================================================
+hanoi
+LIT 15
+GET 0
+JNZ not-base-case
+LIT 1
+JNZ return
+
+not-base-case
+
+; Increase the frame number
+LIT -1
+SUB 1
+SET 1
+
+; Decrease the depth
+LIT 1
+SUB 15
+SET 15
+
+; Swap rods 2 & 3
+LIT 12
+GET 0
+SET 14           ; [14]: temporary
+LIT 13
+GET 0
+SET 12
+LIT 14
+GET 0
+SET 13
+
+; Recursive call
+LIT print
+PUT 1
+JNZ hanoi
+
+print
+
+; Swap rods 2 & 3
+LIT 12
+GET 0
+SET 14
+LIT 13
+GET 0
+SET 12
+LIT 14
+GET 0
+SET 13
+
+; Print movement
+LIT 91
+OUT
+LIT -49          ; add 49 because [15] was decreased
+SUB 15
+OUT
+LIT 93
+OUT
+LIT 58
+OUT
+LIT 32
+OUT
+LIT 11
+GET 0
+OUT
+LIT 32
+OUT
+LIT 45
+OUT
+LIT 62
+OUT
+LIT 32
+OUT
+LIT 12
+GET 0
+OUT
+LIT 10
+OUT
+
+; Swap rods 1 & 3
+LIT 11
+GET 0
+SET 14
+LIT 13
+GET 0
+SET 11
+LIT 14
+GET 0
+SET 13
+
+; Recursive call
+LIT cleanup
+PUT 1
+JNZ hanoi
+
+cleanup
+
+; Swap rods 1 & 3
+LIT 11
+GET 0
+SET 14
+LIT 13
+GET 0
+SET 11
+LIT 14
+GET 0
+SET 13
+
+; Decrease the frame number
+LIT 1
+SUB 1
+SET 1
+
+; Increase the depth
+LIT -1
+SUB 15
+SET 15
+
+return
+
+; Jump to the current frame return address
+GET 1
+SET ret
+; JNZ instruction code + return address placeholder
+DAT 6
+ret
+DAT 0
+
+str
+STR depth(<9)=
+DAT 0
