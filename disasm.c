@@ -1,4 +1,4 @@
-// Disassembler written by Claude Sonnet 4.5
+// Disassembler written by Claude Sonnet 4.5 (with some corrections)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,12 +7,7 @@
 #define MAX_SIZE 256
 #define LOAD_OFFSET 16
 
-typedef struct {
-    int addr;
-    int refs;
-} Label;
-
-Label labels[MAX_SIZE];
+int labels[MAX_SIZE];
 int label_count = 0;
 
 const char *opcodes[] = {
@@ -23,13 +18,10 @@ int has_arg[] = {1, 1, 1, 1, 1, 1, 1, 0, 0, 0};
 
 void add_label(int addr) {
     for (int i = 0; i < label_count; i++) {
-        if (labels[i].addr == addr) {
-            labels[i].refs++;
+        if (labels[i] == addr)
             return;
-        }
     }
-    labels[label_count].addr = addr;
-    labels[label_count].refs = 1;
+    labels[label_count] = addr;
     label_count++;
 }
 
@@ -50,7 +42,7 @@ int is_printable_str(unsigned char *data, int start, int len, int max_len) {
 char *get_label_name(int addr) {
     static char buf[32];
     for (int i = 0; i < label_count; i++) {
-        if (labels[i].addr == addr) {
+        if (labels[i] == addr) {
             sprintf(buf, "line_%03d", addr);
             return buf;
         }
@@ -75,9 +67,17 @@ int main(int argc, char **argv) {
     fclose(f);
 
     // First pass: identify jump targets
+    int data_started = 0;
     for (int pc = 0; pc < size; ) {
         int opcode = data[pc];
-        if (opcode < 10 && opcode == 6) { // JNZ
+        if (opcode < 10)
+            data_started = 0;
+        else {
+            if (!data_started)
+                add_label(LOAD_OFFSET + pc);
+            data_started = 1;
+        }
+        if (opcode == 6) { // JNZ
             if (pc + 1 < size) {
                 int target = data[pc + 1];
                 // Only add label if target is within program bounds
@@ -99,15 +99,14 @@ int main(int argc, char **argv) {
     printf("; Disassembled output\n");
     for (int pc = 0; pc < size; ) {
         int opcode = data[pc];
+        // Check if this address has a label
+        char *label = get_label_name(pc + LOAD_OFFSET);
+        if (label) {
+          printf("%s\n", label);
+        }
         
         if (opcode < 10) {
-            // Check if this address has a label
-            char *label = get_label_name(pc + LOAD_OFFSET);
-            if (label) {
-                printf("%s\n", label);
-            }
-            
-            printf("%-4s", opcodes[opcode]);
+            printf("%s", opcodes[opcode]);
             
             if (has_arg[opcode]) {
                 if (pc + 1 < size) {
@@ -117,12 +116,12 @@ int main(int argc, char **argv) {
                     if (opcode == 6) {
                         char *target = get_label_name(arg);
                         if (target) {
-                            printf(" %-12s", target);
+                            printf(" %s", target);
                         } else {
-                            printf(" %-12d", arg);
+                            printf(" %d", arg);
                         }
                     } else {
-                        printf(" %-12d", arg);
+                        printf(" %d", arg);
                     }
                     
                     // Add comment for LIT with printable characters
@@ -137,12 +136,6 @@ int main(int argc, char **argv) {
             printf("\n");
         } else {
             // Non-instruction: check if it's a string or data
-            // Check if this address has a label
-            char *label = get_label_name(pc + LOAD_OFFSET);
-            if (label) {
-                printf("%s\n", label);
-            }
-            
             int str_len = 0;
             if (is_printable_str(data, pc, 4, size)) {
                 // Find string length
@@ -167,8 +160,8 @@ int main(int argc, char **argv) {
                 printf("DAT");
                 int count = 0;
                 while (pc < size && count < 16) {
-                    // Stop if we hit what looks like an instruction with arg
-                    if (data[pc] < 10 && has_arg[data[pc]]) break;
+                    // Stop if we hit what looks like an instruction and has a label
+                    if (data[pc] < 10 && get_label_name(pc + LOAD_OFFSET)) break;
                     printf(" %d", data[pc]);
                     pc++;
                     count++;
