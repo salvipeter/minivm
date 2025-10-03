@@ -1,0 +1,94 @@
+LIT offset
+SET 5            ; [5]: current offset address
+loop
+GET 5
+SET 2
+LIT after-offset
+SET 1
+JNZ spaces
+after-offset
+LIT 35
+OUT
+LIT 30
+SET 2
+LIT after-left
+SET 1
+JNZ spaces
+after-left
+
+; Check if [5] % 16 < 4
+LIT 5
+GET 0
+SET 6            ; [6]: temporary
+mod
+LIT 16           ; check if < 16
+CGT 6
+JNZ sub
+check
+LIT 4            ; check if < 4
+CGT 6
+JNZ not-less
+LIT 124
+JNZ print
+not-less
+LIT 32
+JNZ print
+sub
+LIT 16           ; subtract 16
+SUB 6
+SET 6
+LIT 1
+JNZ mod
+
+print
+OUT
+LIT 30
+SET 2
+LIT after-right
+SET 1
+JNZ spaces
+after-right
+LIT 35
+OUT
+LIT 10
+OUT
+LIT -1
+SUB 5
+SET 5
+GET 5
+SET 2
+LIT 100
+SUB 2
+JNZ loop
+LIT offset
+SET 5
+JNZ loop
+
+;======================================================
+; Procedure printing [2] spaces, then returning to [1]
+;======================================================
+
+spaces
+LIT 32
+OUT
+LIT 1
+SUB 2
+SET 2
+JNZ spaces
+
+; Returning to [1]
+LIT 1
+GET 0
+SET ret
+; JNZ instruction code + return address placeholder
+DAT 6
+ret
+DAT 0
+
+offset
+;                |       |                        |       |
+DAT 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 3  3 3 3 3 3 4 4 4 4 4 4 4 4 4 4 4
+DAT 4 4 5 5 5 5 5 5 5 5 5 6 6 6 6 7  7 7 7 8 8 8 8 9 9 9 9 8 8 8 7 7
+DAT 7 7 7 6 6 6 6 6 6 6 6 6 6 5 5 5  5 5 4 4 4 4 4 3 3 3 3 3 3 3 2 2
+DAT 3 3 3 4 4 4 4 3 3 3 3 3 2 2 2 2
+DAT 100
