@@ -93,6 +93,7 @@ not-over
 LIT 104
 SUB 8
 JNZ not-h
+; TODO: should jump to input when empty is 3,7,11
 LIT 1
 JNZ handler
 not-h
@@ -111,6 +112,7 @@ not-k
 LIT 108
 SUB 8
 JNZ input
+; TODO: should jump to input when empty is 4,8,12
 LIT -1
 
 handler
