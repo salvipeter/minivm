@@ -1,0 +1,153 @@
+; Fifteen puzzle
+; Controls: hjkl, exit: q
+; Use a VT100-compatible raw terminal for better experience (stty raw -echo)
+; TODO: implement left-right border check
+
+loop
+
+; Print board
+
+; Reset screen
+LIT 27
+OUT
+LIT 99
+OUT
+LIT 10
+OUT
+
+LIT state
+SET 3            ; [3]: current cell
+LIT 0
+SET 1            ; [1]: even row?
+SET 11           ; [11]: row
+outer
+LIT 0
+SET 2            ; [2]: even col?
+SET 12           ; [12]: col
+inner
+LIT 1
+GET 0
+JNZ even-row
+LIT 2
+GET 0
+JNZ dash
+LIT 43
+JNZ print
+dash
+LIT 45
+JNZ print
+even-row
+LIT 2
+GET 0
+JNZ cell
+LIT 124
+JNZ print
+cell
+GET 3
+SET 4            ; temporary
+LIT -1
+SUB 3
+SET 3
+LIT 4
+GET 0
+
+print
+OUT
+
+LIT 2
+GET 0
+SUB one
+SET 2
+LIT -1
+SUB 12
+SET 12
+LIT 9
+SUB 12
+JNZ inner
+
+LIT 13
+OUT
+LIT 10
+OUT
+
+LIT 1
+GET 0
+SUB one
+SET 1
+LIT -1
+SUB 11
+SET 11
+LIT 9
+SUB 11
+JNZ outer
+
+input
+INP
+SET 8            ; [8]: input char
+LIT 113
+SUB 8
+JNZ not-over
+END
+
+not-over
+LIT 104
+SUB 8
+JNZ not-h
+LIT 1
+JNZ handler
+not-h
+LIT 106
+SUB 8
+JNZ not-j
+LIT -4
+JNZ handler
+not-j
+LIT 107
+SUB 8
+JNZ not-k
+LIT 4
+JNZ handler
+not-k
+LIT 108
+SUB 8
+JNZ input
+LIT -1
+
+handler
+SUB zero
+SUB empty
+SET 7            ; [7]: new empty
+LIT 16
+CGT 7
+JNZ input
+
+LIT state
+SUB zero
+SUB 7
+SET 6            ; [6]: new empty addr
+GET 6
+SET 5            ; [5]: old value
+LIT 32
+PUT 6
+LIT state
+SUB zero
+SUB empty
+SET 4            ; [4]: old empty addr
+LIT 5
+GET 0
+PUT 4
+LIT 7
+GET 0
+SET empty
+
+LIT 1
+JNZ loop
+
+zero
+DAT 0
+one
+DAT 1
+empty
+DAT 12
+state
+STR LABOKFEHGJID MNC

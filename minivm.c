@@ -55,6 +55,7 @@ int main(int argc, char **argv) {
     case 8: printf("%c", *mem);                  ip += 1; break;
     default:
       printf("Invalid opcode (%d) at address %d\n", mem[ip], ip);
+      return 3;
     }
   }
 }
