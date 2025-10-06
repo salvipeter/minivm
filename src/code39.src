@@ -1,0 +1,142 @@
+; Convert input string to code39 barcode
+; Input is assumed to be valid, i.e.:
+; - contains only A-Z, 0-9, and [ -$%./+]   (43 chars)
+; - the input should be at most 15 chars long (e.g. ".-+ MINI/VM +-.")
+;   (the output is 13 x (n + 2) chars long, so it fits in <= 221 chars)
+
+LIT input
+SET 1            ; [1]: current input address
+
+more
+LIT -1
+SUB 1
+SET 1
+INP
+PUT 1
+SUB ten
+JNZ more
+
+LIT 100          ; subtract 10 in each iteration to gain 2 bytes
+SET 7            ; [7]: current row number
+
+outer
+LIT input
+SET 1            ; [1]: current input address
+
+inner
+GET 1
+SET 3            ; [3]: current input letter
+LIT letter
+SET 4            ; [4]: current letter address
+LIT width
+SET 5            ; [5]: current width address
+
+width-loop
+LIT 5
+SET 6            ; [6]: current offset (5..2)
+
+offset-loop
+GET 4
+SUB 3
+JNZ not-found
+
+; Found ([5]: width address, [6]: offset)
+LIT 5
+SET 2            ; [2]: current bar index (5..1)
+
+print-loop
+LIT 35
+OUT
+
+GET 5
+SUB 2
+JNZ other
+LIT 35           ; save 1 byte by not jumping
+OUT              ; since `other` will jump to gap
+
+other
+LIT -1
+SUB 5
+GET 0
+SUB 2
+JNZ gap
+
+double
+LIT 35
+OUT
+
+gap
+LIT 32
+OUT
+GET two
+SUB 6
+JNZ not-that
+GET 5
+JNZ double-gap
+LIT 1
+JNZ next-bar
+
+not-that
+GET 5
+JNZ next-bar
+GET two
+CGT one
+JNZ next-bar
+
+double-gap
+LIT 32
+OUT
+
+next-bar
+LIT 1
+SUB 2
+SET 2
+JNZ print-loop
+
+LIT -1
+SUB 1
+SET 1
+GET 1
+JNZ inner
+
+DAT 0
+ten              ; LIT 10 is shown as DAT to use the 10 as data
+DAT 10
+OUT
+SUB 7
+SET 7
+JNZ outer
+
+END
+
+; This placement uses the fact that the next command is a LIT (code 0),
+; which can function as a DAT 0, so we can gain 1 byte
+; (we need 15 bytes + 1 for the * and a final 0)
+input
+DAT 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+not-found
+LIT -1
+SUB 4
+SET 4
+LIT 1
+SUB 6
+SET 6
+SUB one
+JNZ offset-loop
+
+LIT -2
+SUB 5
+SET 5
+JNZ width-loop
+
+letter           ; * is represented by code 10 to gain a few bytes
+STR U1AKV2BLW3CMX4DNY5EOZ6FP-7GQ.8HR 9IS
+DAT 10
+STR 0JT%+/$
+width
+DAT 5
+one
+DAT 1 4 1 5 4 3 1 5 3 4 3
+two
+DAT 2 1 5 2 4 2 3 2 0
