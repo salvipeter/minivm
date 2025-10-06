@@ -14,7 +14,7 @@ with a little magic.
 
 ![Some examples](demos.png)
 
-The 240-byte memory is not much, but just enough for a "Code 39" (ISO/IEC 16388:2023)
+The 240-byte file size limit is just enough for a "Code 39" (ISO/IEC 16388:2023)
 barcode generator (at most 15 characters):
 
 ![Barcode example](code39-demo.png)
