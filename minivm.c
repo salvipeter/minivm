@@ -1,7 +1,7 @@
 /*
   VM specifications:
-  - 256 byte memory (8-bit addressing)
-  - program loaded to start at byte 16
+  - 256 byte memory (8-bit addressing), no registers or flags
+  - The program loaded to start at byte 16
     (bytes 1-15 can be used for communication between programs)
 
   Instruction set:
