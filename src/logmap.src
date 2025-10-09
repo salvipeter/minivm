@@ -1,0 +1,218 @@
+; Compute the bifurcation diagram of the logistic map (scaled by 64):
+;   r in [100, 255]
+;   x_0 = 32
+;   x_n+1 = tmp - tmp * x_n / 64,  where tmp = r * x_n / 64
+; After (say) 20 iterations we set the pixel for each visited value to '#'
+
+; C code:
+;---------------------------------------------------
+; #include <stdio.h>
+; 
+; int main() {
+;   unsigned char y = 63;
+;   do {
+;     for (unsigned char r = 100; r != 0; ++r) {
+;       unsigned char x = 32;
+;       char c = ' ';
+;       for (unsigned char i = 200; i != 0; ++i) {
+;         unsigned char a = r * x / 64;
+;         unsigned char b = a * x / 64;
+;         x = a - b;
+;         if (i > 220 && x == y)
+;           c = '#';
+;           break;
+;       }
+;       printf("%c", c);
+;     }
+;     printf("\n");
+;     y--;
+;   } while (y != 0);
+; }
+;---------------------------------------------------
+
+; Problem:
+;   Given a,b, where b < 64, compute a * b / 64 exactly.
+
+; Solution:
+;   - first compute the 16-bit product by additions
+;   - then divide by 64 using careful subtractions
+
+; C code:
+;---------------------------------------------------
+; unsigned char hi = 0, lo = 0, result = 0;
+; while (b != 0) {
+;   lo += a;
+;   if (lo < a)
+;     hi++;
+;   b--;
+; }
+; while (hi != 0 || lo >= 64) {
+;   if (lo < 64)
+;     hi--;
+;   lo -= 64;
+;   result++;
+; }
+;---------------------------------------------------
+
+LIT 63
+SET 10           ; [10]: y = 63
+yloop
+LIT 100
+SET 11           ; [11]: r = 100
+rloop
+LIT 32
+SET 12           ; [12]: x = 32
+LIT 32
+SET 13           ; [13]: c = ' '
+LIT 200
+SET 14           ; [14]: i = 200
+iloop
+LIT 11
+GET 0
+SET 1
+LIT 12
+GET 0
+SET 2
+LIT comp-a
+SET 4
+JNZ mult
+
+comp-a
+LIT 3
+GET 0
+SET 8            ; [8]: a = r * x / 64
+
+SET 1
+LIT 12
+GET 0
+SET 2
+LIT comp-b
+SET 4
+JNZ mult
+
+comp-b
+LIT 3
+GET 0
+SUB 8
+SET 12           ; [12]: x = a - a * x / 64
+SUB 10
+JNZ i-next       ; jump if x != y
+LIT 220
+CGT 14
+JNZ found        ; jump if i >= 220
+
+i-next
+LIT -1
+SUB 14
+SET 14
+JNZ iloop
+
+print
+LIT 13
+GET 0
+OUT
+
+LIT -1
+SUB 11
+SET 11
+JNZ rloop
+
+LIT 10
+OUT
+
+LIT 1
+SUB 10
+SET 10
+JNZ yloop
+
+END
+
+found
+LIT 35
+SET 13           ; c = '#'
+JNZ print
+
+; ### PROC: a * b / 64   (b < 64)
+; [1]: a
+; [2]: b
+; [3]: result
+; [4]: return address
+; [5-7]: temporary
+mult
+LIT 0
+SET 5            ; [5]: hi = 0
+LIT 0
+SET 6            ; [6]: lo = 0
+
+; Compute a * b using repeated addition
+LIT 2
+GET 0
+JNZ bloop
+
+LIT 1
+JNZ mult-div
+
+bloop
+LIT 1
+GET 0
+SUB zero
+SUB 6
+SET 6            ; [6]: lo += a
+LIT 1
+GET 0
+CGT 6
+JNZ no-overflow  ; jump when lo >= a
+LIT -1
+SUB 5
+SET 5            ; [5]: hi += 1
+no-overflow
+LIT 1
+SUB 2
+SET 2            ; [2]: b -= 1
+JNZ bloop
+
+; Divide (hi:lo) by 64 using repeated subtraction
+mult-div
+LIT 0
+SET 3            ; result = 0
+
+sub-loop
+LIT 5
+GET 0
+JNZ subtract
+
+LIT 64
+CGT 6
+JNZ subtract     ; jump when lo >= 64
+LIT 1
+JNZ mult-over
+
+; Subtract 64 from lo
+subtract
+LIT 64
+CGT 6
+JNZ sub-simple   ; jump when lo >= 64
+
+LIT 1
+SUB 5
+SET 5            ; [5]: hi -= 1
+
+sub-simple
+LIT 64
+SUB 6
+SET 6            ; [6]: lo -= 64
+LIT -1
+SUB 3
+SET 3
+JNZ sub-loop
+
+mult-over
+LIT 4
+GET 0
+SET mult-ret
+DAT 6
+mult-ret
+DAT 0
+
+zero
+DAT 0
