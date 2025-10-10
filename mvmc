@@ -25,6 +25,7 @@ BEGIN {
         m[p++] = $i
     next
 }
+/^EQU/ { labels[$2] = $3; next }
 /^;/ { next }
 NF >= 1 { labels[$1] = p }
 END {
