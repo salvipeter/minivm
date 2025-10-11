@@ -8,7 +8,8 @@ There is also an [assembler](mvmc) written in AWK,
 supporting labels and some additional directives,
 see [an example](src/hello.src).
 
-The virtual machine is simple, but quite expressive.
+The virtual machine is simple, but quite expressive - it can
+[interpret Brainfuck](src/bf.src), for example.
 Even [recursion](src/hanoi.src) can be done
 with a little magic.
 
