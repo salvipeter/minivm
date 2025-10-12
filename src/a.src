@@ -1,3 +1,4 @@
-LIT 65
-OUT
-END
+;;; vim: set ft=asm: -*- mode: asm -*-
+        LIT 65
+        OUT
+        END

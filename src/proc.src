@@ -1,215 +1,217 @@
-; Multiple instances of the same algorithm take up space.
-; Also the same algorithms are needed for a variety of tasks.
-; Here are some common, easily reusable procedures:
-; - print(str)
-; - printnum(n)
-; - mul(a, b)
-; - divmod(n, k)
-; Note: the procedures are independent of each other.
-; (printnum would probably be shorter in terms of divmod)
+;;; vim: set ft=asm: -*- mode: asm -*-
 
-LIT n
-SET 1
-LIT m
-GET 0
-SET 2
-LIT after-op
-SET 3
-; <================== Select operation
-JNZ divmod       ; prints n/m n%m
-;JNZ mul         ; prints n*m n
+;;; Multiple instances of the same algorithm take up space.
+;;; Also the same algorithms are needed for a variety of tasks.
+;;; Here are some common, easily reusable procedures:
+;;; - print(str)
+;;; - printnum(n)
+;;; - mul(a, b)
+;;; - divmod(n, k)
+;;; Note: the procedures are independent of each other.
+;;; (printnum would probably be shorter in terms of divmod)
 
-; <================== Set arguments
-n
-DAT 101
-m
-DAT 17
+        LIT n
+        SET 1
+        LIT m
+        GET 0
+        SET 2
+        LIT after-op
+        SET 3
+        ;; <================== Select operation
+        JNZ divmod       ; prints n/m n%m
+        ;JNZ mul          ; prints n*m n
 
-after-op
+        ;; <================== Set arguments
+n:
+        DAT 101
+m:
+        DAT 17
 
-; Print number
-LIT n
-GET 0
-SET 1
-LIT after-num
-SET 2
-JNZ printnum     ; print result
-after-num
+after-op:
 
-LIT 32
-OUT
+        ;; Print number
+        LIT n
+        GET 0
+        SET 1
+        LIT after-num
+        SET 2
+        JNZ printnum     ; print result
+after-num:
 
-LIT 4
-GET 0
-SET 1
-LIT after-num2
-SET 2
-JNZ printnum
-after-num2
+        LIT 32
+        OUT
 
-LIT message
-SET 1
-LIT the-end
-SET 2
-JNZ print
+        LIT 4
+        GET 0
+        SET 1
+        LIT after-num2
+        SET 2
+        JNZ printnum
+after-num2:
 
-the-end
-END
+        LIT message
+        SET 1
+        LIT the-end
+        SET 2
+        JNZ print
 
-message
-DAT 10
-STR MVM
-DAT 10 0
+the-end:
+        END
 
-;===============================================================================
+message:
+        DAT 10
+        STR MVM
+        DAT 10 0
 
-; ### PROC: print(str)   --   19 bytes (only worth it when you have >= 3 calls)
-; [1]: string address [destroyed]
-; [2]: return address
-print
-GET 1
-JNZ print-more
-GET print-two
-print-two        ; SET code used as data
-SET print-ret
-DAT 6
-print-ret
-DAT 0
-print-more
-OUT
-LIT -1
-SUB 1
-SET 1
-JNZ print
+;;;===============================================================================
 
-;===============================================================================
+;;; ### PROC: print(str)   --   19 bytes (only worth it when you have >= 3 calls)
+;;; [1]: string address [destroyed]
+;;; [2]: return address
+print:
+        GET 1
+        JNZ print-more
+        GET print-two
+print-two:               ; SET code used as data
+        SET print-ret
+        DAT 6
+print-ret:
+        DAT 0
+print-more:
+        OUT
+        LIT -1
+        SUB 1
+        SET 1
+        JNZ print
 
-; ### PROC: printnum(n)   --   85 bytes
-; [1]: n [destroyed]
-; [2]: return address
-; [3]: temp
-printnum
-LIT 200
-CGT 1
-JNZ pr200        ; jump when n >= 200
-LIT 100
-CGT 1
-JNZ pr100        ; jump when n >= 100
-LIT 10
-CGT 1
-JNZ pr10         ; jump when n >= 10
-pr-ones
-LIT -48
-SUB 1
-OUT              ; print n + '0'
-GET printnum-two
-printnum-two     ; SET code used as data
-SET printnum-ret
-DAT 6
-printnum-ret
-DAT 0
-pr200
-LIT 50
-OUT              ; print '2'
-LIT 200
-pr-to-tens
-SUB 1
-SET 1            ; [1]: n %= 100
-LIT 10
-CGT 1
-JNZ pr10         ; jump when n >= 10
-LIT 48
-OUT              ; print '0'
-JNZ pr-ones
-pr100
-LIT 49
-OUT              ; print '1'
-LIT 100
-JNZ pr-to-tens
-pr10
-LIT 0
-SET 3            ; [3]: temp = 0
-pr10-loop
-LIT -1
-SUB 3
-SET 3            ; [3]: temp += 1
-LIT 10
-SUB 1
-SET 1            ; [1]: n -= 10
-LIT 10
-CGT 1
-JNZ pr10-loop    ; jump when n >= 10
-LIT -48
-SUB 3
-OUT              ; print temp + '0'
-JNZ pr-ones
+;;;===============================================================================
 
-;===============================================================================
+;;; ### PROC: printnum(n)   --   85 bytes
+;;; [1]: n [destroyed]
+;;; [2]: return address
+;;; [3]: temp
+printnum:
+        LIT 200
+        CGT 1
+        JNZ pr200        ; jump when n >= 200
+        LIT 100
+        CGT 1
+        JNZ pr100        ; jump when n >= 100
+        LIT 10
+        CGT 1
+        JNZ pr10         ; jump when n >= 10
+pr-ones:
+        LIT -48
+        SUB 1
+        OUT              ; print n + '0'
+        GET printnum-two
+printnum-two:            ; SET code used as data
+        SET printnum-ret
+        DAT 6
+printnum-ret:
+        DAT 0
+pr200:
+        LIT 50
+        OUT              ; print '2'
+        LIT 200
+pr-to-tens:
+        SUB 1
+        SET 1            ; [1]: n %= 100
+        LIT 10
+        CGT 1
+        JNZ pr10         ; jump when n >= 10
+        LIT 48
+        OUT              ; print '0'
+        JNZ pr-ones
+pr100:
+        LIT 49
+        OUT              ; print '1'
+        LIT 100
+        JNZ pr-to-tens
+pr10:
+        LIT 0
+        SET 3            ; [3]: temp = 0
+pr10-loop:
+        LIT -1
+        SUB 3
+        SET 3            ; [3]: temp += 1
+        LIT 10
+        SUB 1
+        SET 1            ; [1]: n -= 10
+        LIT 10
+        CGT 1
+        JNZ pr10-loop    ; jump when n >= 10
+        LIT -48
+        SUB 3
+        OUT              ; print temp + '0'
+        JNZ pr-ones
 
-; ### PROC: mul(a, b)   --   36 bytes
-; [1]: a (-> a * b) address
-; [2]: b [destroyed]
-; [3]: return address
-; [4]: temp (a)
-mul
-GET 1
-SET 4            ; [4]: a
-LIT 0
-mul-three        ; PUT code used as data
-PUT 1
-mul-loop
-GET mul-two
-JNZ mul-more     ; jump when b != 0
-GET mul-three
-mul-two          ; SET code used as data
-SET mul-ret
-DAT 6
-mul-ret
-DAT 0
-mul-more
-GET 1
-SUB mul-zero
-SUB 4
-PUT 1            ; [[1]]: result += a
-LIT 1
-SUB 2
-SET 2            ; [2]: b -= 1
-mul-zero         ; LIT code used as data
-LIT 1
-JNZ mul-loop
+;;;===============================================================================
 
-;===============================================================================
+;;; ### PROC: mul(a, b)   --   36 bytes
+;;; [1]: a (-> a * b) address
+;;; [2]: b [destroyed]
+;;; [3]: return address
+;;; [4]: temp (a)
+mul:
+        GET 1
+        SET 4            ; [4]: a
+        LIT 0
+mul-three:               ; PUT code used as data
+        PUT 1
+mul-loop:
+        GET mul-two
+        JNZ mul-more     ; jump when b != 0
+        GET mul-three
+mul-two:                 ; SET code used as data
+        SET mul-ret
+        DAT 6
+mul-ret:
+        DAT 0
+mul-more:
+        GET 1
+        SUB mul-zero
+        SUB 4
+        PUT 1            ; [[1]]: result += a
+        LIT 1
+        SUB 2
+        SET 2            ; [2]: b -= 1
+mul-zero:                ; LIT code used as data
+        LIT 1
+        JNZ mul-loop
 
-; ### PROC: divmod(n, k)   --   38 bytes
-; [1]: n (-> quotient) address
-; [2]: k
-; [3]: return address
-; [4]: remainder
-divmod
-divmod-one       ; GET code used as data
-GET 1
-divmod-two       ; SET code used as data
-SET 4            ; [4]: rem = n
-LIT 0
-divmod-three     ; PUT code used as data
-PUT 1            ; [[1]]: quot = 0
-divmod-loop
-GET divmod-two
-CGT 4
-JNZ divmod-more  ; jump when rem >= k
-GET divmod-three
-SET divmod-ret
-DAT 6
-divmod-ret
-DAT 0
-divmod-more
-GET 1
-SUB divmod-zero
-SUB divmod-one
-PUT 1            ; [[1]]: quot += 1
-GET divmod-two
-SUB 4
-SET 4            ; [4]: rem -= k
-divmod-zero      ; LIT code used as data
-LIT 1
-JNZ divmod-loop
+;;;===============================================================================
+
+;;; ### PROC: divmod(n, k)   --   38 bytes
+;;; [1]: n (-> quotient) address
+;;; [2]: k
+;;; [3]: return address
+;;; [4]: remainder
+divmod:
+divmod-one:              ; GET code used as data
+        GET 1
+divmod-two:              ; SET code used as data
+        SET 4            ; [4]: rem = n
+        LIT 0
+divmod-three:            ; PUT code used as data
+        PUT 1            ; [[1]]: quot = 0
+divmod-loop:
+        GET divmod-two
+        CGT 4
+        JNZ divmod-more  ; jump when rem >= k
+        GET divmod-three
+        SET divmod-ret
+        DAT 6
+divmod-ret:
+        DAT 0
+divmod-more:
+        GET 1
+        SUB divmod-zero
+        SUB divmod-one
+        PUT 1            ; [[1]]: quot += 1
+        GET divmod-two
+        SUB 4
+        SET 4            ; [4]: rem -= k
+divmod-zero:             ; LIT code used as data
+        LIT 1
+        JNZ divmod-loop

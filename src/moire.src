@@ -1,73 +1,75 @@
-LIT 0
-SET 9            ; [9]: constant 0
-LIT 32
-SET 1            ; [1]: rows to go
-outer
-LIT 64
-SET 2            ; [2]: cols to go
-inner
-LIT 2
-GET 0
-SUB 9
-SUB 1
-SET 3            ; [3]: [1] + [2]
-LIT 2
-GET 0
-SUB 1
-SET 5            ; [5]: [1] - [2]
+;;; vim: set ft=asm: -*- mode: asm -*-
 
-mod1
-LIT 9            ; while >= m
-CGT 3
-JNZ sub1
-check1
-LIT 3
-GET 0
-JNZ mod2
-found
-LIT 35
-OUT
-JNZ next-char
-sub1
-LIT 9            ; subtract m
-SUB 3
-SET 3
-LIT 1
-JNZ mod1
+        LIT 0
+        SET 9            ; [9]: constant 0
+        LIT 32
+        SET 1            ; [1]: rows to go
+outer:
+        LIT 64
+        SET 2            ; [2]: cols to go
+inner:
+        LIT 2
+        GET 0
+        SUB 9
+        SUB 1
+        SET 3            ; [3]: [1] + [2]
+        LIT 2
+        GET 0
+        SUB 1
+        SET 5            ; [5]: [1] - [2]
 
-mod2
-LIT 13           ; while >= m
-CGT 5
-JNZ sub2
-check2
-LIT 5
-GET 0
-JNZ not-found
-LIT 1
-JNZ found
-not-found
-LIT 46
-OUT
-JNZ next-char
-sub2
-LIT 13           ; subtract m
-SUB 5
-SET 5
-LIT 1
-JNZ mod2
+mod1:
+        LIT 9            ; while >= m
+        CGT 3
+        JNZ sub1
+check1:
+        LIT 3
+        GET 0
+        JNZ mod2
+found:
+        LIT 35
+        OUT
+        JNZ next-char
+sub1:
+        LIT 9            ; subtract m
+        SUB 3
+        SET 3
+        LIT 1
+        JNZ mod1
 
-next-char
-LIT 1
-SUB 2
-SET 2
-JNZ inner
+mod2:
+        LIT 13           ; while >= m
+        CGT 5
+        JNZ sub2
+check2:
+        LIT 5
+        GET 0
+        JNZ not-found
+        LIT 1
+        JNZ found
+not-found:
+        LIT 46
+        OUT
+        JNZ next-char
+sub2:
+        LIT 13           ; subtract m
+        SUB 5
+        SET 5
+        LIT 1
+        JNZ mod2
 
-LIT 10
-OUT
+next-char:
+        LIT 1
+        SUB 2
+        SET 2
+        JNZ inner
 
-LIT 1
-SUB 1
-SET 1
-JNZ outer
+        LIT 10
+        OUT
 
-END
+        LIT 1
+        SUB 1
+        SET 1
+        JNZ outer
+
+        END

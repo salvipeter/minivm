@@ -96,17 +96,17 @@ int main(int argc, char **argv) {
     }
 
     // Second pass: disassemble
-    printf("; Disassembled output\n");
+    printf(";;; Disassembled output\n");
     for (int pc = 0; pc < size; ) {
         int opcode = data[pc];
         // Check if this address has a label
         char *label = get_label_name(pc + LOAD_OFFSET);
         if (label) {
-          printf("%s\n", label);
+          printf("%s:\n", label);
         }
         
         if (opcode < 10) {
-            printf("%s", opcodes[opcode]);
+            printf("\t%s", opcodes[opcode]);
             
             if (has_arg[opcode]) {
                 if (pc + 1 < size) {
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
                     str_len++;
                 }
                 
-                printf("STR ");
+                printf("\tSTR ");
                 for (int i = 0; i < str_len && pc + i < size; i++) {
                     putchar(data[pc + i]);
                 }
@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
                 // Looks like an instruction, stop here
             } else if (pc < size && data[pc] >= 10) {
                 // Output as DAT
-                printf("DAT");
+                printf("\tDAT");
                 int count = 0;
                 while (pc < size && count < 16) {
                     // Stop if we hit what looks like an instruction and has a label

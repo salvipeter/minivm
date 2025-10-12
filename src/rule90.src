@@ -1,69 +1,71 @@
-LIT 32
-SET 2            ; [2]: rows to go
-outer
+;;; vim: set ft=asm: -*- mode: asm -*-
 
-; Print row
-LIT row
-SET 1
-GET 1
-loop
-OUT
-LIT -1
-SUB 1
-SET 1
-GET 1
-JNZ loop
+        LIT 32
+        SET 2            ; [2]: rows to go
+outer:
 
-; Create next row
-LIT row
-SET 3            ; [3]: prev addr
-LIT -1
-SUB 3
-SET 4            ; [4]: curr addr
-LIT -1
-SUB 4
-SET 5            ; [5]: next addr
-GET 3
-SET 8            ; [8]: prev char
-inner
-GET 5
-SET 6            ; [6]: next char
-LIT 10
-SUB 6
-JNZ continue
-LIT 1
-JNZ next-row
-continue
-GET 4
-SET 7            ; [7]: curr char
-GET 5
-SUB 8
-JNZ alive
-LIT 46
-JNZ next-char
-alive
-LIT 35
-next-char
-PUT 4
-; Update values
-LIT 5
-GET 0
-SET 4
-LIT -1
-SUB 5
-SET 5
-LIT 7
-GET 0
-SET 8
-JNZ inner
+        ;; Print row
+        LIT row
+        SET 1
+        GET 1
+loop:
+        OUT
+        LIT -1
+        SUB 1
+        SET 1
+        GET 1
+        JNZ loop
 
-next-row
-LIT 1
-SUB 2
-SET 2
-JNZ outer
-END
+        ;; Create next row
+        LIT row
+        SET 3            ; [3]: prev addr
+        LIT -1
+        SUB 3
+        SET 4            ; [4]: curr addr
+        LIT -1
+        SUB 4
+        SET 5            ; [5]: next addr
+        GET 3
+        SET 8            ; [8]: prev char
+inner:
+        GET 5
+        SET 6            ; [6]: next char
+        LIT 10
+        SUB 6
+        JNZ continue
+        LIT 1
+        JNZ next-row
+continue:
+        GET 4
+        SET 7            ; [7]: curr char
+        GET 5
+        SUB 8
+        JNZ alive
+        LIT 46
+        JNZ next-char
+alive:
+        LIT 35
+next-char:
+        PUT 4
+        ;; Update values
+        LIT 5
+        GET 0
+        SET 4
+        LIT -1
+        SUB 5
+        SET 5
+        LIT 7
+        GET 0
+        SET 8
+        JNZ inner
 
-row
-STR ................................#................................
-DAT 10 0
+next-row:
+        LIT 1
+        SUB 2
+        SET 2
+        JNZ outer
+        END
+
+row:
+        STR ................................#................................
+        DAT 10 0

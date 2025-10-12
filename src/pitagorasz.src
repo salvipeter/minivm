@@ -1,40 +1,42 @@
-LIT 0
-SET 1          ; [1] : constant 0
-LIT 0
-SET 2          ; [2] : row
-outer
-LIT 2
-GET 0
-SET 3          ; [3] : col
-inner
-LIT pitagorasz
-SUB 1
-SUB 3
-SET 4          ; [4] : current char addr
-GET 4
-OUT
-LIT 32
-OUT
-LIT -1
-SUB 3
-SET 3
-LIT 10
-SUB 3
-JNZ no-mod
-LIT 0
-SET 3
-no-mod
-LIT 2
-GET 0
-SUB 3
-JNZ inner
-LIT -1
-SUB 2
-SET 2
-LIT 10
-OUT
-SUB 2
-JNZ outer
-END
-pitagorasz
-STR Pitagorasz
+;;; vim: set ft=asm: -*- mode: asm -*-
+
+        LIT 0
+        SET 1          ; [1] : constant 0
+        LIT 0
+        SET 2          ; [2] : row
+outer:
+        LIT 2
+        GET 0
+        SET 3          ; [3] : col
+inner:
+        LIT pitagorasz
+        SUB 1
+        SUB 3
+        SET 4          ; [4] : current char addr
+        GET 4
+        OUT
+        LIT 32
+        OUT
+        LIT -1
+        SUB 3
+        SET 3
+        LIT 10
+        SUB 3
+        JNZ no-mod
+        LIT 0
+        SET 3
+no-mod:
+        LIT 2
+        GET 0
+        SUB 3
+        JNZ inner
+        LIT -1
+        SUB 2
+        SET 2
+        LIT 10
+        OUT
+        SUB 2
+        JNZ outer
+        END
+pitagorasz:
+        STR Pitagorasz

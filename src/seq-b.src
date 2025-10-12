@@ -1,60 +1,63 @@
-; Output a number in [1] (destroyed in the process)
-; [2]: hundreds
-; [3]: tens
-LIT 0
-SET 2
-SET 3
-hundreds
-LIT 100
-CGT 1
-JNZ >99
-LIT 2
-GET 0
-JNZ write-hundreds
-LIT 1
-JNZ tens
-write-hundreds
-LIT -48
-SUB 2
-OUT
-LIT 1
-JNZ tens
->99
-LIT 100
-SUB 1
-SET 1
-LIT -1
-SUB 2
-SET 2
-JNZ hundreds
-tens
-LIT 10
-CGT 1
-JNZ >9
-LIT 3
-GET 0
-JNZ write-tens
-LIT 1
-JNZ ones
-write-tens
-LIT -48
-SUB 3
-OUT
-LIT 1
-JNZ ones
->9
-LIT 10
-SUB 1
-SET 1
-LIT -1
-SUB 3
-SET 3
-JNZ tens
-ones
-LIT -48
-SUB 1
-OUT
+;;; vim: set ft=asm: -*- mode: asm -*-
 
-LIT 10
-OUT
-END
+;;; Output a number in [1] (destroyed in the process)
+;;; [2]: hundreds
+;;; [3]: tens
+
+        LIT 0
+        SET 2
+        SET 3
+hundreds:
+        LIT 100
+        CGT 1
+        JNZ >99
+        LIT 2
+        GET 0
+        JNZ write-hundreds
+        LIT 1
+        JNZ tens
+write-hundreds:
+        LIT -48
+        SUB 2
+        OUT
+        LIT 1
+        JNZ tens
+>99:
+        LIT 100
+        SUB 1
+        SET 1
+        LIT -1
+        SUB 2
+        SET 2
+        JNZ hundreds
+tens:
+        LIT 10
+        CGT 1
+        JNZ >9
+        LIT 3
+        GET 0
+        JNZ write-tens
+        LIT 1
+        JNZ ones
+write-tens:
+        LIT -48
+        SUB 3
+        OUT
+        LIT 1
+        JNZ ones
+>9:
+        LIT 10
+        SUB 1
+        SET 1
+        LIT -1
+        SUB 3
+        SET 3
+        JNZ tens
+ones:
+        LIT -48
+        SUB 1
+        OUT
+
+        LIT 10
+        OUT
+        END

@@ -1,3 +1,5 @@
-LIT 42
-SET 1
-END
+;;; vim: set ft=asm: -*- mode: asm -*-
+
+        LIT 42
+        SET 1
+        END

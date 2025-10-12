@@ -4,34 +4,37 @@ BEGIN {
     for (i = 0; i < 256; i++)
         ord[sprintf("%c", i)] = i
 }
-/^LIT/ { m[p++] = 0; m[p++] = $2; next }
-/^GET/ { m[p++] = 1; m[p++] = $2; next }
-/^SET/ { m[p++] = 2; m[p++] = $2; next }
-/^PUT/ { m[p++] = 3; m[p++] = $2; next }
-/^SUB/ { m[p++] = 4; m[p++] = $2; next }
-/^CGT/ { m[p++] = 5; m[p++] = $2; next }
-/^JNZ/ { m[p++] = 6; m[p++] = $2; next }
-/^INP/ { m[p++] = 7;              next }
-/^OUT/ { m[p++] = 8;              next }
-/^END/ { m[p++] = 9;              next }
-/^STR/ {
+$1 == "LIT" { m[p++] = 0; m[p++] = $2 }
+$1 == "GET" { m[p++] = 1; m[p++] = $2 }
+$1 == "SET" { m[p++] = 2; m[p++] = $2 }
+$1 == "PUT" { m[p++] = 3; m[p++] = $2 }
+$1 == "SUB" { m[p++] = 4; m[p++] = $2 }
+$1 == "CGT" { m[p++] = 5; m[p++] = $2 }
+$1 == "JNZ" { m[p++] = 6; m[p++] = $2 }
+$1 == "INP" { m[p++] = 7 }
+$1 == "OUT" { m[p++] = 8 }
+$1 == "END" { m[p++] = 9 }
+$1 == "STR" {
+    sub(/^[ \t]*STR[ \t]/, "")
     n = split($0, s, "")
-    for (i = 5; i <= n && s[i] != ";"; i++)
+    for (i = 1; i <= n && s[i] != ";"; i++)
         m[p++] = ord[s[i]]
-    next
 }
-/^DAT/ {
-    for (i = 2; i <= NF && !($i ~ /;.*/); i++)
+$1 == "DAT" {
+    for (i = 2; i <= NF && !($i ~ /^;/); i++)
         m[p++] = $i
-    next
 }
-/^EQU/ { labels[$2] = $3; next }
-/^;/ { next }
-NF >= 1 { labels[$1] = p }
+$1 == "EQU" { labels[$2] = $3 }
+$1 ~ /^;/ { next }
+$1 ~ /:$/ { sub(/:/, "", $1); labels[$1] = p }
 END {
     for (i = 16; i < p; i++)
         if (m[i] ~ /^[-+]?[0-9]+$/)
             printf("%c", (m[i] + 256) % 256)
-        else
-            printf("%c", labels[m[i]])
+        else {
+            if (m[i] in labels)
+                printf("%c", labels[m[i]])
+            else
+                print "ERROR: no such label '" m[i] "'" > "/dev/stderr"
+        }
 }

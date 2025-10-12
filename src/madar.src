@@ -1,40 +1,42 @@
-LIT 10
-SET 1         ; [1] = -10
-start
-INP
-SET 2         ; [2] = input char
-SUB 1
-JNZ continue
-LIT 10
-OUT
-END
-continue
-LIT vowels
-SET 3         ; [3] = vowel addr
-loop
-GET 3         ; start checking the next vowel
-JNZ check     ; if no more vowels ...
-LIT 0
-SUB 2
-OUT           ; ... output the (non-vowel) char
-JNZ start
-check
-SUB 2         ; if it is the same as the vowel ...
-JNZ next
-LIT 0
-SUB 2
-OUT           ; ... print it
-LIT 118
-OUT           ; ... print a 'v'
-LIT 0
-SUB 2
-OUT           ; ... and print it once again
-JNZ start
-next
-LIT -1        ; increment [3]
-SUB 3
-SET 3
-JNZ loop
-vowels
-STR aeiou
-DAT 0
+;;; vim: set ft=asm: -*- mode: asm -*-
+
+        LIT 10
+        SET 1         ; [1] = -10
+start:
+        INP
+        SET 2         ; [2] = input char
+        SUB 1
+        JNZ continue
+        LIT 10
+        OUT
+        END
+continue:
+        LIT vowels
+        SET 3         ; [3] = vowel addr
+loop:
+        GET 3         ; start checking the next vowel
+        JNZ check     ; if no more vowels ...
+        LIT 0
+        SUB 2
+        OUT           ; ... output the (non-vowel) char
+        JNZ start
+check:
+        SUB 2         ; if it is the same as the vowel ...
+        JNZ next
+        LIT 0
+        SUB 2
+        OUT           ; ... print it
+        LIT 118
+        OUT           ; ... print a 'v'
+        LIT 0
+        SUB 2
+        OUT           ; ... and print it once again
+        JNZ start
+next:
+        LIT -1        ; increment [3]
+        SUB 3
+        SET 3
+        JNZ loop
+vowels:
+        STR aeiou
+        DAT 0

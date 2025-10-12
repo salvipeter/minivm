@@ -1,161 +1,163 @@
-LIT str
-SET 1
-GET 1
-loop
-OUT
-LIT -1
-SUB 1
-SET 1
-GET 1
-JNZ loop
+;;; vim: set ft=asm: -*- mode: asm -*-
 
-INP
-SET 4
-LIT 48
-SUB 4
-SET 4            ; [4]: number of rows (1-9)
+        LIT str
+        SET 1
+        GET 1
+loop:
+        OUT
+        LIT -1
+        SUB 1
+        SET 1
+        GET 1
+        JNZ loop
 
-; If the # of rows is not in 1-9, default to 10
-JNZ check-limit
-reset
-LIT 10
-SET 4
-JNZ start
-check-limit
-LIT 10
-CGT 4
-JNZ reset
+        INP
+        SET 4
+        LIT 48
+        SUB 4
+        SET 4            ; [4]: number of rows (1-9)
 
-start
-LIT 0
-SET 5            ; [5]: current row
-outer
+        ;; If the # of rows is not in 1-9, default to 10
+        JNZ check-limit
+reset:
+        LIT 10
+        SET 4
+        JNZ start
+check-limit:
+        LIT 10
+        CGT 4
+        JNZ reset
 
-; First print the current state of the row
+start:
+        LIT 0
+        SET 5            ; [5]: current row
+outer:
 
-LIT 0
-SET 15           ; [15]: constant 0
-SET 6            ; [6]: current col
-print-loop
-LIT row
-SUB 15
-SUB 6
-SET 7            ; [7]: current number address
-GET 7
-SET 1
+        ;; First print the current state of the row
 
-; Output a number in [1] (destroyed in the process)
-; [2]: hundreds
-; [3]: tens
-LIT 0
-SET 2
-SET 3
-hundreds
-LIT 100
-CGT 1
-JNZ >99
-LIT 2
-GET 0
-JNZ write-hundreds
-LIT 1
-JNZ tens
-write-hundreds
-LIT -48
-SUB 2
-OUT
-LIT 1
-JNZ tens
->99
-LIT 100
-SUB 1
-SET 1
-LIT -1
-SUB 2
-SET 2
-JNZ hundreds
-tens
-LIT 10
-CGT 1
-JNZ >9
-LIT 3
-GET 0
-JNZ write-tens
-LIT 1
-JNZ ones
-write-tens
-LIT -48
-SUB 3
-OUT
-LIT 1
-JNZ ones
->9
-LIT 10
-SUB 1
-SET 1
-LIT -1
-SUB 3
-SET 3
-JNZ tens
-ones
-LIT -48
-SUB 1
-OUT
+        LIT 0
+        SET 15           ; [15]: constant 0
+        SET 6            ; [6]: current col
+print-loop:
+        LIT row
+        SUB 15
+        SUB 6
+        SET 7            ; [7]: current number address
+        GET 7
+        SET 1
 
-LIT 32
-OUT
+        ;; Output a number in [1] (destroyed in the process)
+        ;; [2]: hundreds
+        ;; [3]: tens
+        LIT 0
+        SET 2
+        SET 3
+hundreds:
+        LIT 100
+        CGT 1
+        JNZ >99
+        LIT 2
+        GET 0
+        JNZ write-hundreds
+        LIT 1
+        JNZ tens
+write-hundreds:
+        LIT -48
+        SUB 2
+        OUT
+        LIT 1
+        JNZ tens
+>99:
+        LIT 100
+        SUB 1
+        SET 1
+        LIT -1
+        SUB 2
+        SET 2
+        JNZ hundreds
+tens:
+        LIT 10
+        CGT 1
+        JNZ >9
+        LIT 3
+        GET 0
+        JNZ write-tens
+        LIT 1
+        JNZ ones
+write-tens:
+        LIT -48
+        SUB 3
+        OUT
+        LIT 1
+        JNZ ones
+>9:
+        LIT 10
+        SUB 1
+        SET 1
+        LIT -1
+        SUB 3
+        SET 3
+        JNZ tens
+ones:
+        LIT -48
+        SUB 1
+        OUT
 
-LIT -1
-SUB 6
-SET 6
-CGT 5
-JNZ print-loop
+        LIT 32
+        OUT
 
-LIT 10
-OUT
+        LIT -1
+        SUB 6
+        SET 6
+        CGT 5
+        JNZ print-loop
 
-; Now create the next row
-LIT row+1
-SET 7            ; [7]: current number address
-LIT 1
-SET 8            ; [8]: old number
-SET 6            ; [6]: current col
-inner
-CGT 5
-JNZ continue
-LIT 1
-JNZ next-row
-continue
-GET 7
-SET 9            ; [9]: temp storage
-SUB 15
-SUB 8
-PUT 7
-LIT 9            ; update [8]
-GET 0
-SET 8
-LIT -1           ; increase [7]
-SUB 7
-SET 7
-LIT -1           ; increase [6]
-SUB 6
-SET 6
-JNZ inner
+        LIT 10
+        OUT
 
-next-row
-LIT 1
-PUT 7
+        ;; Now create the next row
+        LIT row+1
+        SET 7            ; [7]: current number address
+        LIT 1
+        SET 8            ; [8]: old number
+        SET 6            ; [6]: current col
+inner:
+        CGT 5
+        JNZ continue
+        LIT 1
+        JNZ next-row
+continue:
+        GET 7
+        SET 9            ; [9]: temp storage
+        SUB 15
+        SUB 8
+        PUT 7
+        LIT 9            ; update [8]
+        GET 0
+        SET 8
+        LIT -1           ; increase [7]
+        SUB 7
+        SET 7
+        LIT -1           ; increase [6]
+        SUB 6
+        SET 6
+        JNZ inner
 
-LIT -1
-SUB 5
-SET 5
-SUB 4
-JNZ outer
+next-row:
+        LIT 1
+        PUT 7
 
-END
+        LIT -1
+        SUB 5
+        SET 5
+        SUB 4
+        JNZ outer
 
-row
-DAT 1
-row+1
-str
-STR [1-9]:
-DAT 32 32 0
+        END
+
+row:
+        DAT 1
+row+1:
+str:
+        STR [1-9]:
+        DAT 32 32 0

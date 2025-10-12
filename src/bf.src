@@ -1,169 +1,171 @@
-; Brainfuck interpreter
-;
-; Because of space limitations:
-; - programs should not be more than 43 characters
-; - there are only 14 bytes of memory (bytes 8-21)
-;
-; See some examples at the bottom of the file.
+;;; vim: set ft=asm: -*- mode: asm -*-
 
-EQU memory 8
+;;; Brainfuck interpreter
+;;;
+;;; Because of space limitations:
+;;; - programs should not be more than 43 characters
+;;; - there are only 14 bytes of memory (bytes 8-21)
+;;;
+;;; See some examples at the bottom of the file.
 
-; Clears memory until `clear`;
-; note that the following LIT 0 (= DAT 0 0) is also usable memory.
-LIT 18
-SET 19           ; <- bytes 18-19
-clear
-LIT 0
-PUT 19
-LIT 1
-SUB 19
-SET 19
-JNZ clear
+        EQU memory 8
 
-LIT program
-SET 1            ; [1]: IP
-LIT memory
-SET 2            ; [2]: DP
+        ;; Clears memory until `clear`;
+        ;; note that the following LIT 0 (= DAT 0 0) is also usable memory.
+        LIT 18
+        SET 19           ; <- bytes 18-19
+clear:
+        LIT 0
+        PUT 19
+        LIT 1
+        SUB 19
+        SET 19
+        JNZ clear
 
-loop
-GET 1
-SET 3            ; [3]: current command
-LIT 62
-SUB 3
-JNZ not>
+        LIT program
+        SET 1            ; [1]: IP
+        LIT memory
+        SET 2            ; [2]: DP
 
-; >
-LIT -1
-change-dp
-SUB 2
-SET 2
-JNZ next
+loop:
+        GET 1
+        SET 3            ; [3]: current command
+        LIT 62
+        SUB 3
+        JNZ not>
 
-not>
-LIT 60
-SUB 3
-JNZ not<
+        ;; >
+        LIT -1
+change-dp:
+        SUB 2
+        SET 2
+        JNZ next
 
-; <
-LIT 1
-JNZ change-dp
+not>:
+        LIT 60
+        SUB 3
+        JNZ not<
 
-not<
-LIT 43
-SUB 3
-JNZ not+
+        ;; <
+        LIT 1
+        JNZ change-dp
 
-; +
-GET 2
-SET 4            ; [4]: temp
-LIT -1
-change-value
-SUB 4
-PUT 2
-LIT 1
-JNZ next
+not<:
+        LIT 43
+        SUB 3
+        JNZ not+
 
-not+
-LIT 45
-SUB 3
-JNZ not-
+        ;; +
+        GET 2
+        SET 4            ; [4]: temp
+        LIT -1
+change-value:
+        SUB 4
+        PUT 2
+        LIT 1
+        JNZ next
 
-; -
-GET 2
-SET 4            ; [4]: temp
-LIT 1
-JNZ change-value
+not+:
+        LIT 45
+        SUB 3
+        JNZ not-
 
-not-
-LIT 46
-SUB 3
-JNZ not.
+        ;; -
+        GET 2
+        SET 4            ; [4]: temp
+        LIT 1
+        JNZ change-value
 
-; .
-GET 2
-OUT
-LIT 1
-JNZ next
+not-:
+        LIT 46
+        SUB 3
+        JNZ not.
 
-not.
-LIT 44
-SUB 3
-JNZ not,
+        ;; .
+        GET 2
+        OUT
+        LIT 1
+        JNZ next
 
-; ,
-INP
-three            ; PUT code (3) used as data
-PUT 2
-LIT 1
+not.:
+        LIT 44
+        SUB 3
+        JNZ not,
 
-not,
-LIT 93
-SUB 3
-JNZ not]
+        ;; ,
+        INP
+three:                   ; PUT code (3) used as data
+        PUT 2
+        LIT 1
 
-; ]
-GET 2
-JNZ backward
+not,:
+        LIT 93
+        SUB 3
+        JNZ not]
 
-not]
-LIT 91
-SUB 3
-JNZ next
+        ;; ]
+        GET 2
+        JNZ backward
 
-; [
-GET 2
-six              ; JNZ code (6) used as data
-JNZ next
-zero             ; LIT code (0) used as data
-LIT -1
-SET 6            ; [6]: search direction
+not]:
+        LIT 91
+        SUB 3
+        JNZ next
 
-handle-bracket
-LIT 1
-SET 5            ; [5]: same brackets seen
-bracket-loop
-GET six
-SUB 1
-SET 1            ; [1]: IP -= dir
-GET 1
-SET 4            ; [4]: current char
-GET three
-SUB 4
-JNZ not-same     ; jump when not same bracket
-LIT -1
-SUB 5
-SET 5            ; [5]: brackets += 1
-not-same
-GET six
-SUB 3
-SET 7            ; [7]: temp (current bracket - dir)
-GET six
-SUB 7
-SUB 4
-JNZ bracket-loop ; jump when not other bracket
-LIT 1
-SUB 5
-SET 5            ; [5]: brackets -= 1
-JNZ bracket-loop
+        ;; [
+        GET 2
+six:                     ; JNZ code (6) used as data
+        JNZ next
+zero:                    ; LIT code (0) used as data
+        LIT -1
+        SET 6            ; [6]: search direction
 
-next
-LIT -1
-SUB 1
-SET 1
-JNZ loop
+handle-bracket:
+        LIT 1
+        SET 5            ; [5]: same brackets seen
+bracket-loop:
+        GET six
+        SUB 1
+        SET 1            ; [1]: IP -= dir
+        GET 1
+        SET 4            ; [4]: current char
+        GET three
+        SUB 4
+        JNZ not-same     ; jump when not same bracket
+        LIT -1
+        SUB 5
+        SET 5            ; [5]: brackets += 1
+not-same:
+        GET six
+        SUB 3
+        SET 7            ; [7]: temp (current bracket - dir)
+        GET six
+        SUB 7
+        SUB 4
+        JNZ bracket-loop ; jump when not other bracket
+        LIT 1
+        SUB 5
+        SET 5            ; [5]: brackets -= 1
+        JNZ bracket-loop
 
-over
-END
+next:
+        LIT -1
+        SUB 1
+        SET 1
+        JNZ loop
 
-backward
-LIT 1
-SET 6            ; [6]: search direction
-JNZ handle-bracket
+over:
+        END
 
-program ; <==== Choose one of the following examples or write another
-;               (Programs need to be padded to maximum length with non-BF chars.)
+backward:
+        LIT 1
+        SET 6            ; [6]: search direction
+        JNZ handle-bracket
 
-; Maximum length ..............................|
+program: ; <==== Choose one of the following examples or write another
+;;               (Programs need to be padded to maximum length with non-BF chars.)
+
+;;; Maximum length ............................|
 ;STR ++++++++++.                                ; Writes a newline
 ;STR +++[>>++++[<+++++>-]<<-]>+.                ; Computes 3*4*5+1 = 61 ('=')
 ;STR ++[>++[>+++[>+++<-]<-]<-]>>>-.             ; Computes 2*2*3*3-1 = 35 ('#')
