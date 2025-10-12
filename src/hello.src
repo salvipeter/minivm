@@ -3,12 +3,13 @@
 ;;; Lines starting with semicolons are comments
 ;;;   and everything after the required argument (if any) is ignored.
 ;;; Starting spaces/tabs are ignored.
-;;; If the first word ends with a colon, it is a label.
-;;; EQU is a new keyword: the next word has the value of the number after it
+;;; If the first word ends with a colon, it is a label;
+;;;   nothing else is processed on that line.
+;;; EQU is a new keyword: the previous word has the value of the number after it
 ;;; STR is a new keyword: everything after it is saved verbatim.
 ;;; DAT is a new keyword: it is followed by numbers saved as data.
 
-        EQU nl 10         ; Linux-style newline character
+nl      EQU 10            ; Linux-style newline character
 
         LIT hello         ; take the address of 'hello'
         SET 1             ; ... and put it in [1]

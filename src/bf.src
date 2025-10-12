@@ -8,7 +8,7 @@
 ;;;
 ;;; See some examples at the bottom of the file.
 
-        EQU memory 8
+memory  EQU 8
 
         ;; Clears memory until `clear`;
         ;; note that the following LIT 0 (= DAT 0 0) is also usable memory.
