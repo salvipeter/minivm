@@ -1,8 +1,11 @@
 ; Lines starting with semicolons are comments
 ; and everything after the required argument (if any) is ignored.
+; EQU is a new keyword: the next word has the value of the number after it
 ; STR is a new keyword: everything after it is saved verbatim.
 ; DAT is a new keyword: it is followed by numbers saved as data.
 ; If a line does not start with a keyword its first word is a label.
+
+EQU nl 10         ; Linux-style newline character
 
 LIT hello         ; take the address of 'hello'
 SET 1             ; ... and put it in [1]
@@ -16,5 +19,5 @@ GET 0
 JNZ loop          ; jump back if [[0]] (the next character) is not 0
 END
 hello
-STR Hello World!
-DAT 10 0
+STR  Hello World! ; spaces also count
+DAT nl 0          ; labels can be used here, as well

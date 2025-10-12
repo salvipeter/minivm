@@ -1,13 +1,12 @@
 ; Brainfuck interpreter
 ;
 ; Because of space limitations:
-; - programs should not be more than 32 characters
-; - there are only 15 bytes of memory (bytes 7-21)
+; - programs should not be more than 43 characters
+; - there are only 14 bytes of memory (bytes 8-21)
 ;
 ; See some examples at the bottom of the file.
 
-EQU bracket-dir 6
-EQU memory 7
+EQU memory 8
 
 ; Clears memory until `clear`;
 ; note that the following LIT 0 (= DAT 0 0) is also usable memory.
@@ -19,7 +18,6 @@ PUT 19
 LIT 1
 SUB 19
 SET 19
-bracket-dir-addr ; JNZ code (6) used as data
 JNZ clear
 
 LIT program
@@ -94,88 +92,80 @@ JNZ not,
 
 ; ,
 INP
+three            ; PUT code (3) used as data
 PUT 2
 LIT 1
 
 not,
+LIT 93
+SUB 3
+JNZ not]
+
+; ]
+GET 2
+JNZ backward
+
+not]
 LIT 91
 SUB 3
-JNZ not[
+JNZ next
 
 ; [
 GET 2
+six              ; JNZ code (6) used as data
 JNZ next
-LIT bracket-open
-SET 3            ; [3]: current bracket
+zero             ; LIT code (0) used as data
 LIT -1
-SET bracket-dir
+SET 6            ; [6]: search direction
+
 handle-bracket
 LIT 1
 SET 5            ; [5]: same brackets seen
 bracket-loop
-GET bracket-dir-addr
+GET six
 SUB 1
-SET 1
+SET 1            ; [1]: IP -= dir
 GET 1
-SET 4            ; [4]: temp (current char)
-GET 3
+SET 4            ; [4]: current char
+GET three
 SUB 4
 JNZ not-same     ; jump when not same bracket
 LIT -1
 SUB 5
 SET 5            ; [5]: brackets += 1
 not-same
-GET bracket-dir-addr
+GET six
 SUB 3
-GET 0
+SET 7            ; [7]: temp (current bracket - dir)
+GET six
+SUB 7
 SUB 4
 JNZ bracket-loop ; jump when not other bracket
 LIT 1
 SUB 5
 SET 5            ; [5]: brackets -= 1
 JNZ bracket-loop
-LIT 1
-
-not[
-LIT 93
-SUB 3
-JNZ next
-
-; ]
-GET 2
-JNZ backward
 
 next
 LIT -1
 SUB 1
 SET 1
-GET 1
 JNZ loop
 
 over
 END
 
 backward
-LIT bracket-close
-SET 3            ; [3]: current bracket
 LIT 1
-SET bracket-dir
+SET 6            ; [6]: search direction
 JNZ handle-bracket
 
-bracket-open
-STR [
-bracket-close
-STR ]
-
 program ; <==== Choose one of the following examples or write another
+;               (Programs need to be padded to maximum length with non-BF chars.)
 
-; Maximum length ...................|
-;STR ++++++++++.                      ; Writes a newline
-;STR +++[>>++++[<+++++>-]<<-]>+.      ; Test nested loops - compute 3*4*5+1 = 61 ('=')
-;STR ++[>++[>+++[>+++<-]<-]<-]>>>-.   ; More nesting - compute 2*2*3*3-1 = 35 ('#')
-STR +[,..>++++++++++[<->-]<]         ; Test user input - double echo, RET quits
-
-;STR +++++++++++[>+++++++>++++++++<<-]>.>--.<. ; Writes MVM - too long (41 bytes)
-
-; Signifying end of program
-DAT 0
+; Maximum length ..............................|
+;STR ++++++++++.                                ; Writes a newline
+;STR +++[>>++++[<+++++>-]<<-]>+.                ; Computes 3*4*5+1 = 61 ('=')
+;STR ++[>++[>+++[>+++<-]<-]<-]>>>-.             ; Computes 2*2*3*3-1 = 35 ('#')
+;STR +[,..>++++++++++[<->-]<]                   ; Double echo, RET quits
+STR +++++++++++[>+++++++>++++++++<<-]>.>--.<.  ; Prints MVM

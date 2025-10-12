@@ -16,12 +16,12 @@ BEGIN {
 /^END/ { m[p++] = 9;              next }
 /^STR/ {
     n = split($0, s, "")
-    for (i = 5; i <= n; i++)
+    for (i = 5; i <= n && s[i] != ";"; i++)
         m[p++] = ord[s[i]]
     next
 }
 /^DAT/ {
-    for (i = 2; i <= NF; i++)
+    for (i = 2; i <= NF && !($i ~ /;.*/); i++)
         m[p++] = $i
     next
 }
