@@ -1,0 +1,132 @@
+;;; vim: set ft=asm: -*- mode: asm -*-
+
+;;; Decodes a base64-encoded string (until end-of-input, =, or unknown char)
+
+start:
+        LIT 8
+        SET 1                   ; [1]: # of bits left
+        LIT 0
+        SET 4                   ; [4]: byte to output
+loop:
+        INP
+        SET 3                   ; [3]: current char
+        LIT 32
+        SUB 3
+        JNZ not-space
+        LIT 1
+        JNZ loop
+not-space:
+        LIT 10
+        SUB 3
+        JNZ not-ret
+        LIT 1
+        JNZ loop
+not-ret:
+        LIT 43
+        SUB 3
+        JNZ not+
+        ;; +
+        LIT 62
+        JNZ next
+not+:
+        LIT 47
+        SUB 3
+        JNZ not/
+        ;; /
+        LIT 63
+        JNZ next
+not/:
+        LIT 48
+        CGT 3
+        JNZ ge48
+        ;; c not [+/] and c < '0'
+        END
+ge48:
+        LIT 58
+        CGT 3
+        JNZ ge58
+        ;; c in [0-9]
+        LIT -4
+        SUB 3
+        JNZ next
+ge58:
+        LIT 97
+        CGT 3
+        JNZ ge97
+        ;; c < 'a'
+        LIT 65
+        CGT 3
+        JNZ ge65
+        ;; c not [+/0-9] and c < 'A'
+the-end:
+        END
+ge65:
+        LIT 91
+        CGT 3
+        JNZ the-end             ; c > 'Z' and c < 'a'
+        ;; c in [A-Z]
+        LIT 65
+        SUB 3
+next:
+        SET 2                   ; [2]: current value (n)
+        ;; Idea:
+        ;; - n <<= 2
+        ;; - loop 6 times, checking always the highest bit (n >= 128)
+        ;; - each time shift the result [4] left and add the bit
+        ;; - when the remaining bits is 0, output the byte and set it back to 8
+four:
+        SUB zero
+        SUB 2
+two:
+        SET 2
+        SUB zero
+        SUB 2
+        SET 2
+        LIT 6
+        SET 3                   ; [3]: iteration counter
+bits:
+        GET four
+        SUB zero
+        SUB 4
+        SET 4
+        LIT 128
+        CGT 2
+        JNZ set-bit
+        LIT 1
+        JNZ check-full
+set-bit:
+        LIT -1
+        SUB 4
+        SET 4
+check-full:
+        LIT 1
+        SUB 1
+        SET 1
+        JNZ next-bit
+        GET four
+        OUT
+        LIT 0
+        SET 4
+        LIT 8
+        SET 1
+next-bit:
+        GET two
+        SUB zero
+        SUB 2
+        SET 2
+        LIT 1
+        SUB 3
+        SET 3
+        JNZ bits
+zero:
+        LIT 1
+        JNZ loop
+
+ge97:
+        LIT 123
+        CGT 3
+        JNZ the-end             ; c > 'z'
+        ;; c in [a-z]
+        LIT 71
+        SUB 3
+        JNZ next
