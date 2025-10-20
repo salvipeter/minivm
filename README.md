@@ -27,3 +27,32 @@ despite the lack of floating point numbers (or multiplication):
 
 A little [PostScript program](punchcard.eps) generates punch cards for
 any program you write (see [an example](punchcard.pdf)).
+
+## The Next Step?
+
+For a not-so-minimal version, consider (for example) the following:
+
+
+Consider using a larger cell size (16 or 32 bit). To keep it concise,
+an instruction and the associated parameter can be encoded in one cell
+(the opcode in the high bits, for example). Using 4 bits for the
+instructions, you can index 2^(16-4) = 4096 cells, and there is also
+space to create 6 new instructions! (Similarly for the 32 bit version.)
+
+|              | 16-bit version             | 32-bit version             |
+|--------------|----------------------------|----------------------------|
+| Layout       | 4 bit opcode + 12 bit data | 6 bit opcode + 26 bit data |
+| Memory       | 4K (4096) cells = 8 KB     | 64M cells = 256 MB         |
+| Instructions | 16                         | 64                         |
+
+For new instructions, some recommendations are:
+
+- Direct memory read (`SET`'s pair): `LOAD`
+
+- Jumps, e.g. `JMP`, `JZ`, also indirect jump `JTV` (jump-to-value)
+
+- Arithmetics, e.g. `MUL`, `DIV`, `MOD`
+
+- Bit manipulations, e.g. `NAND`, `AND`, `OR`, `XOR`, `LSH`, `RSH`
+
+In the 32-bit version direct/indirect versions of all instructions can be added.
