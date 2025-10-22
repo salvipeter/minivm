@@ -1,0 +1,186 @@
+;;; vim: set ft=asm: -*- mode: asm -*-
+
+;;; Prints the n-th happy prime (n = 1 .. 13) as a binary number.
+
+n       EQU 10
+
+        LIT n
+        SET 10                  ; [10]: how many more happy primes
+        LIT 2
+        SET 11                  ; [11]: current number
+
+loop:
+        ;; Check if prime
+        LIT 2
+        SET 12                  ; [12]: divisor
+prime_loop:
+        GET eleven
+        SET 5                   ; [5]: temporary
+        CGT 12
+        JNZ prime               ; jump when divisor >= prime
+        LIT 5
+        SET 1
+        GET twelve
+        SET 2
+        LIT prime_div
+        SET 3
+        JNZ divmod
+prime_div:
+        GET four
+        JNZ prime_next
+        ;; not prime
+        LIT 1
+        JNZ next
+prime_next:
+        LIT -1
+        SUB 12
+        ;; SET 12
+        DAT 2
+twelve:
+        DAT 12
+        JNZ prime_loop
+
+prime:
+        ;; Check if happy
+        GET eleven
+        SET 5                   ; [5]: current happy state
+happy_loop:
+        LIT 0
+        SET 13                  ; [13]: squared digit sum
+
+;;; Compute squared digit sum
+happy_square:
+        LIT 5
+        SET 1
+        LIT 10
+        SET 2
+        LIT happy_div
+        SET 3
+        JNZ divmod              ; [4]: remainder
+happy_div:
+        GET 1
+        SET 5                   ; [5] /= 10
+
+        ;; Add the square of the remainder to [13]
+        GET four
+        SUB zero
+        SET 1                   ; [1]: -[4]
+square_loop:
+        GET four
+        JNZ square_more
+        LIT 1
+        JNZ square_over
+square_more:
+        GET divmod-one
+        SUB 13
+        ;; SET 13
+        DAT 2
+thirteen:
+        DAT 13
+        LIT 1
+        SUB 4
+        SET 4
+        JNZ square_more
+square_over:
+
+        GET five
+        JNZ happy_square
+        GET thirteen
+        SET 5
+        LIT 10
+five:
+        CGT 5
+        JNZ happy_loop          ; jump when number >= 10
+        LIT 1
+        SUB 5
+        JNZ next
+
+happy:
+zero:
+        LIT 1
+        SUB 10
+        SET 10
+        JNZ next
+
+        ;; Print the contents of [11] in binary
+        LIT 8
+        SET 1                   ; [1]: bits to write
+skip_zeros:
+        LIT 128
+        CGT 11
+        JNZ print_binary
+        LIT 1
+        SUB 1
+        SET 1
+        GET eleven
+        SUB zero
+        SUB 11
+        SET 11
+        JNZ skip_zeros
+print_binary:
+        LIT 128
+        CGT 11
+        JNZ print_one
+        LIT 48
+        JNZ print
+print_one:
+        LIT 49
+print:
+        OUT
+        GET eleven
+        SUB zero
+        SUB 11
+        SET 11
+        LIT 1
+        SUB 1
+        SET 1
+        JNZ print_binary
+        LIT 10
+        OUT
+        END
+
+next:
+        LIT -1
+four:
+        SUB 11
+        ;; SET 11
+        DAT 2
+eleven:
+        DAT 11
+        JNZ loop
+
+;;;===============================================================================
+
+;;; ### PROC: divmod(n, k)   --   38 bytes
+;;; [1]: n (-> quotient) address
+;;; [2]: k
+;;; [3]: return address
+;;; [4]: remainder
+divmod:
+divmod-one:              ; GET code used as data
+        GET 1
+divmod-two:              ; SET code used as data
+        SET 4            ; [4]: rem = n
+        LIT 0
+divmod-three:            ; PUT code used as data
+        PUT 1            ; [[1]]: quot = 0
+divmod-loop:
+        GET divmod-two
+        CGT 4
+        JNZ divmod-more  ; jump when rem >= k
+        GET divmod-three
+        SET divmod-ret
+        DAT 6
+divmod-ret:
+        DAT 0
+divmod-more:
+        GET 1
+        SUB divmod-zero
+        SUB divmod-one
+        PUT 1            ; [[1]]: quot += 1
+        GET divmod-two
+        SUB 4
+        SET 4            ; [4]: rem -= k
+divmod-zero:             ; LIT code used as data
+        LIT 1
+        JNZ divmod-loop
