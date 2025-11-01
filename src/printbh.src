@@ -1,17 +1,20 @@
 ;;; vim: set ft=asm: -*- mode: asm -*-
 
-n   EQU 47
-
-    LIT n
+    LIT 0
+    SET 4   ; n
+loop:
+    LIT 4
+    GET 0
     SET 1
     LIT after-binary
     SET 2
     JNZ printb
 after-binary:
-    LIT 10
+    LIT 32
     OUT
 
-    LIT n
+    LIT 4
+    GET 0
     SET 1
     LIT after-hex
     SET 2
@@ -19,6 +22,11 @@ after-binary:
 after-hex:
     LIT 10
     OUT
+
+    LIT -1
+    SUB 4
+    SET 4
+    JNZ loop
     END
 
 ;;; ------------------------------ 
@@ -59,64 +67,51 @@ pb-ret:
     DAT 0
 
 ;;; ------------------------------ 
-;;; PROC: printh (75 + 6 = 81 bytes)
+;;; PROC: printh (54 + 6 = 60 bytes)
 ;;; - [1]: n
 ;;; - [2]: return address
-;;; - [3-5]: temp
+;;; - [3]: temp
 
 printh:
-    LIT 2
-    SET 3   ; outer
-ph-out:
-    LIT 4
-    SET 4   ; inner
     LIT 0
-    SET 5   ; value
-ph-in:
-    GET ph-five
-    SUB ph-zero
-    SUB 5
-    SET 5
-    LIT 128
-    CGT 1
-    JNZ ph1
-    LIT 1
-    JNZ ph0
-ph1:
-    LIT -1
-    SUB 5
-    SET 5
-ph0:
-ph-one:
-    GET ph-one
-    SUB ph-zero
-    SUB 1
-    SET 1
-    LIT 1
-    SUB 4
-    SET 4
-    JNZ ph-in
-    LIT 10
-ph-five:
-    CGT 5
-    JNZ ph-alpha
-    LIT -48
-    JNZ ph-print
-ph-alpha:
-    LIT -55
-ph-print:
-    SUB 5
-    OUT
-ph-zero:
-    LIT 1
-    SUB 3
-ph-two:
     SET 3
-    JNZ ph-out
+ph-loop:
+    LIT 16
+    CGT 1
+    JNZ ph-more
+    LIT 10
+    CGT 3
+    JNZ ph-a1
+    LIT -48
+    JNZ ph-pr1
+ph-a1:
+    LIT -55
+ph-pr1:
+    SUB 3
+    OUT
+    LIT 10
+    CGT 1
+    JNZ ph-a2
+    LIT -48
+    JNZ ph-p2
+ph-a2:
+    LIT -55
+ph-p2:
+    SUB 1
+    OUT
     ;; return code
     GET ph-two
+ph-two:
     SET ph-ret
     DAT 6
 ph-ret:
     DAT 0
+ph-more:
+    LIT 16
+    SUB 1
+    SET 1
+    LIT -1
+    SUB 3
+    SET 3
+    JNZ ph-loop
 
