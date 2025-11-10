@@ -1,0 +1,143 @@
+;;; vim: set ft=asm: -*- mode: asm -*-
+
+;;; An index of an n-sided, depth-d S-patch is
+;;; an n-tuple of nonnegative integers that sum to d.
+;;; Problem: write the whole index set.
+
+        LIT msg1
+        SET 10
+print1:
+        GET 10
+        JNZ print1-more
+        INP
+        SET 1
+        LIT 48
+        SUB 1
+        SET 1                   ; [1]: # of sides
+        INP                     ; read CR
+        JNZ read-more
+print1-more:
+        OUT
+        LIT -1
+        SUB 10
+        SET 10
+        JNZ print1
+
+read-more:
+        LIT msg2
+        SET 10
+print2:
+        GET 10
+        JNZ print2-more
+        INP
+        SET 2
+        LIT 48
+        SUB 2
+        SET 2                   ; [2]: depth
+        INP                     ; read CR
+        JNZ read-over
+print2-more:
+        OUT
+        LIT -1
+        SUB 10
+        SET 10
+        JNZ print2
+
+read-over:
+        LIT index
+        SET 3                   ; [3]: index
+        JNZ start
+loop:
+        GET four
+        SUB zero
+        SUB 3
+        SET 5                   ; [5]: index+i
+        GET two
+        JNZ increase
+        
+        GET 5
+        SUB zero
+        SUB 2
+        SET 2                   ; [2]: depth += index[i]
+        LIT 0
+        PUT 5                   ; index[i] = 0
+        LIT 1
+        SUB 4
+        SET 4
+        SUB minus1
+        JNZ loop
+        END
+
+increase:
+        GET 5
+        SET 6                   ; [6]: tmp
+        LIT -1
+        SUB 6
+        PUT 5                   ; index[i] += 1
+        LIT 1
+        SUB 2
+        SET 2                   ; [2]: d -= 1
+start:
+        LIT 1
+        SUB 1
+        SET 4                   ; [4]: i = n - 1
+        SUB zero
+        SUB 3
+        SET 5                   ; [5]: index+i
+        GET two
+        PUT 5
+        LIT 1
+        SET 6                   ; [6]: j = 0
+        LIT index
+        SET 5                   ; [5]: index
+        ;; Output first one
+        GET 5
+        SET 7
+        LIT -48
+        SUB 7
+        OUT
+        LIT -1
+        SUB 5
+        SET 5
+print_loop:
+        LIT 44
+        OUT
+        LIT 32
+        OUT
+        GET 5
+        SET 7                   ; [7]: tmp
+        LIT -48
+        SUB 7
+        OUT
+        LIT -1
+        SUB 5
+        SET 5
+;;; LIT -1 as two data values
+zero:
+        DAT 0
+minus1:
+        DAT -1
+        SUB 6
+        SET 6
+        SUB 1
+        JNZ print_loop
+        LIT 10
+        OUT
+        LIT 1
+four:
+        SUB 4
+two:
+        SET 4                   ; [4]: i -= 1
+        SUB minus1
+        JNZ loop
+        END
+
+msg1:
+        STR # of sides (3-9)?
+        DAT 32 0
+msg2:
+        STR Depth (1-9)?
+        DAT 32
+
+index:
+        DAT 0 0 0 0 0 0 0 0 0
