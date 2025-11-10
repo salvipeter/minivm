@@ -1,0 +1,146 @@
+;;; vim: set ft=asm: -*- mode: asm -*-
+
+    LIT 0
+    SET 9   ; counter
+    LIT 1
+    SET 8   ; top?
+    SET 6   ; first of a pair?
+    LIT spiral
+    SET 10  ; cmd
+loop:
+    LIT left
+    SUB 10
+    JNZ more
+nine:
+    END
+more:
+    LIT left
+    SET 1
+    GET nine
+    SET 2
+    LIT left-over
+    SET 3
+    JNZ printk
+left-over:
+    GET 10
+    SET 11  ; temp
+    LIT 128
+    CGT 11
+    JNZ negative
+    LIT filled
+    SET 1
+    GET 10
+    JNZ center
+negative:
+    LIT empty
+    SET 1
+    GET 10
+    SUB zero
+center:
+    SET 2
+    LIT center-over
+    SET 3
+    JNZ printk
+center-over:
+    LIT right
+    SET 1
+    GET nine
+    SET 2
+    GET eight
+    JNZ top
+    LIT 1
+    SUB 2
+    SET 2
+top:
+    LIT right-over
+    SET 3
+    JNZ printk
+right-over:
+    LIT 10
+eight:
+    OUT
+    GET six
+    JNZ twin
+    GET eight
+    JNZ increase
+    LIT 1
+    JNZ change
+increase:
+    LIT -1
+change:
+    SUB 9
+    SET 9
+    LIT 18  ; number of negative numbers in spiral
+    CGT 9
+    JNZ bottom
+    LIT 1
+    JNZ not-bottom
+bottom:
+    LIT 0
+    SET 8
+not-bottom:
+    LIT 1
+    SET 6
+    LIT -1
+    SUB 10
+    SET 10
+six:
+    JNZ loop
+twin:
+    LIT 0
+    SET 6
+    GET 10
+    SUB zero
+three:
+    PUT 10
+    JNZ loop
+
+spiral:
+    DAT -71 -67 -63 -59 -55 -51 -47 -43 -39 -35 -31 -27 -23 -19 -15 -11 -7 -3 
+    DAT 1 5 9 13 17 21 25 29 33 37 41 45 49 53 57 61 65 69
+
+left:
+    DAT 35 35
+empty:
+    DAT 32 32 0
+right:
+    DAT 32 32
+filled:
+    DAT 35 35 0
+
+;;; printk: print string k times
+;;; - [1]: string address
+;;; - [2]: k
+;;; - [3]: return address
+;;; - [4-5]: temp
+printk:
+    GET two
+    SET 4   ; counter
+    JNZ print-iter
+    LIT 1
+    JNZ print-over
+print-iter:
+    GET one
+    SET 5   ; address
+print-loop:
+    GET 5
+    JNZ print-more
+zero:
+    LIT 1
+    SUB 4
+two:
+    SET 4
+    JNZ print-iter
+print-over:
+one:
+    GET three
+    SET print-ret
+    DAT 6
+print-ret:
+    DAT 0
+print-more:
+    OUT
+    LIT -1
+    SUB 5
+    SET 5
+    JNZ print-loop
