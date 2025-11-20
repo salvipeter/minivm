@@ -71,6 +71,14 @@ no-parameter:
         SET 1
         JNZ loop
 data:
+        LIT 83
+        OUT
+        LIT 84
+        OUT
+        LIT 82
+        OUT
+        LIT 32
+        OUT
         LIT 34
         OUT
 str-loop:
