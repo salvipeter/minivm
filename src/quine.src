@@ -1,0 +1,145 @@
+;;; vim: set ft=asm: -*- mode: asm -*-
+
+;;; Prints its own source code, directly disassembling the memory contents.
+;;; Assumes that there is only one data section at the end, containing printable characters.
+
+start:
+zero:
+        LIT start
+two:
+        SET 1                   ; [1]: ip
+loop:
+one:
+        GET one
+        SET 4
+        LIT after-address
+        SET 2
+        JNZ printh
+after-address:
+        LIT 58
+        OUT
+        LIT 9
+        OUT
+        GET 1
+        SET 2                   ; [2]: current instruction
+        SET 4                   ; [4]: same
+        LIT 10
+        CGT 2
+        JNZ data
+        LIT instructions
+        SET 3                   ; [3]: instruction name
+instr-loop:
+        GET two
+        JNZ next-instr
+        GET 3
+        OUT
+        LIT -1
+four:
+        SUB 3
+        SET 3
+        GET 3
+        OUT
+        LIT -1
+        SUB 3
+        SET 3
+        GET 3
+        OUT
+        LIT 7
+        CGT 4
+        JNZ no-parameter
+        LIT 32
+        OUT
+        LIT -1
+        SUB 1
+        SET 1
+        GET 1
+        SET 4                   ; [4]: number
+        LIT no-parameter
+        SET 2
+        JNZ printh
+next-instr:
+        LIT 1
+        SUB 2
+        SET 2
+        LIT -3
+        SUB 3
+        SET 3
+        JNZ instr-loop
+no-parameter:
+        LIT 10
+        OUT
+        LIT -1
+        SUB 1
+        SET 1
+        JNZ loop
+data:
+        LIT 34
+        OUT
+str-loop:
+        GET 1
+        OUT
+        LIT -1
+        SUB 1
+        SET 1
+        LIT end
+        SUB 1
+        JNZ str-loop
+        LIT 34
+        OUT
+        LIT 10
+        OUT
+        END
+
+;;; [2]: return address
+;;; [3]: temp
+;;; [4]: n
+printh:
+        LIT 48
+        OUT
+        LIT 120
+        OUT
+        LIT 0
+        SET 3
+ph-loop:
+        LIT 16
+        CGT 4
+        JNZ ph-more
+        LIT 10
+        CGT 3
+        JNZ ph-a1
+        LIT -48
+        JNZ ph-pr1
+ph-a1:
+        LIT -55
+ph-pr1:
+        SUB 3
+        OUT
+        LIT 10
+        CGT 4
+        JNZ ph-a2
+        LIT -48
+        JNZ ph-p2
+ph-a2:
+        LIT -55
+ph-p2:
+        SUB 4
+        OUT
+        ;; return code
+        GET two
+        SET ph-ret
+        DAT 6
+ph-ret:
+        DAT 0
+ph-more:
+        LIT 16
+        SUB 4
+        SET 4
+        LIT -1
+        SUB 3
+        SET 3
+        JNZ ph-loop
+        
+instructions:
+        STR LITGETSETPUTSUBCGTJNZINPOUTEND -=MVM=-
+
+end:
