@@ -4,7 +4,6 @@
 ;;; Assumes that there is only one data section at the end, containing printable characters.
 
 start:
-zero:
         LIT start
 two:
         SET 1                   ; [1]: ip
@@ -13,7 +12,7 @@ one:
         GET one
         SET 4
         LIT after-address
-        SET 2
+        SET ph-ret
         JNZ printh
 after-address:
         LIT 58
@@ -34,7 +33,6 @@ instr-loop:
         GET 3
         OUT
         LIT -1
-four:
         SUB 3
         SET 3
         GET 3
@@ -55,7 +53,7 @@ four:
         GET 1
         SET 4                   ; [4]: number
         LIT no-parameter
-        SET 2
+        SET ph-ret
         JNZ printh
 next-instr:
         LIT 1
@@ -90,9 +88,9 @@ str-loop:
         OUT
         END
 
-;;; [2]: return address
 ;;; [3]: temp
 ;;; [4]: n
+;;; [ph-ret]: return address
 printh:
         LIT 48
         OUT
@@ -125,8 +123,6 @@ ph-p2:
         SUB 4
         OUT
         ;; return code
-        GET two
-        SET ph-ret
         DAT 6
 ph-ret:
         DAT 0
@@ -140,6 +136,6 @@ ph-more:
         JNZ ph-loop
         
 instructions:
-        STR LITGETSETPUTSUBCGTJNZINPOUTEND -=MVM=-
+        STR LITGETSETPUTSUBCGTJNZINPOUTEND
 
 end:
