@@ -79,8 +79,6 @@ data:
         OUT
         LIT 32
         OUT
-        LIT 34
-        OUT
 str-loop:
         GET 1
         OUT
@@ -90,8 +88,6 @@ str-loop:
         LIT end
         SUB 1
         JNZ str-loop
-        LIT 34
-        OUT
         LIT 10
         OUT
         END
