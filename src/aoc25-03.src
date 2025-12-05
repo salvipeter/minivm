@@ -1,0 +1,77 @@
+;;; vim: set ft=asm: -*- mode: asm -*-
+
+;;; Advent of Code 2025, Day 3
+;;; Change the first EQU line for part 2
+
+;;; This only prints the joltages, so take the sum to get the solution:
+;;;   $ cat input.txt | minivm aoc25-03.mvm | paste -sd+ | bc
+
+bats    EQU 2                   ; Part one: 2, Part two: 12
+
+start:
+        LIT data
+        SET 1
+read-loop:
+        LIT 128                 ; this will remain in [0] if input fails
+        INP
+        PUT 1
+        SET 2
+        LIT 127
+        CGT 2
+        JNZ over
+        LIT -1
+        SUB 1
+        SET 1
+        LIT 10
+        SUB 2
+        JNZ read-loop
+
+        LIT bats
+        SET 5                   ; [5]: number of batteries to go
+        LIT data
+        SET 1                   ; [1]: current element address
+        SET 2                   ; [2]: maximum element address
+max-loop:
+        GET 2
+        SET 3                   ; [3]: maximum element
+one:
+        GET 1
+five:
+        CGT 3
+        JNZ no-update
+        GET one
+        SET 2
+no-update:
+        LIT -1
+        SUB 1
+        SET 1
+zero:
+        GET five
+        SUB zero
+        SUB 1
+        SET 4
+        GET 4
+        SET 4
+        LIT 10
+        SUB 4
+        JNZ max-loop
+
+        GET 2
+        OUT
+        LIT -1
+        SUB 2
+        SET 1
+        SET 2
+        LIT 1
+        SUB 5
+        SET 5
+        JNZ max-loop
+
+        LIT 10
+        OUT
+        JNZ start
+
+over:
+        END
+
+data:
