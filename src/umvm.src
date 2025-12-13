@@ -1,0 +1,107 @@
+;;; vim: set ft=asm: -*- mode: asm -*-
+
+;;; Universal Mini Virtual Machine: runs the MVM program appended to it.
+;;; Note that the program can be at most 76 bytes long.
+
+;;; Usage:
+;;;   cat umvm.mvm program.mvm > /tmp/combined.mvm && minivm /tmp/combined.mvm
+
+        LIT program
+        SET 3                   ; [3]: instruction pointer
+        LIT jumps
+        SET 4                   ; [4]: end of jump table
+        LIT data
+        SET 5                   ; [5]: data addr
+
+loop:
+        GET 3
+        SUB 4
+        GET 0
+        SET jump-to
+zero:
+        LIT -1
+        SUB 3
+        SET 3
+        GET 3
+        SUB zero
+        SUB 5
+        SET 6                   ; [6]: data+addr
+        GET 0
+        SET 1                   ; [1]: [data+addr]
+        SUB zero
+        SUB 5
+        SET 7                   ; [7]: data+[data+addr]
+        GET 0
+two:
+        SET 2                   ; [2]: [data+[data+addr]]
+        LIT 1
+        DAT 6
+jump-to:
+        DAT 0
+
+op-lit:
+        GET 3
+        SET data
+        LIT 1
+        JNZ next
+op-get:
+        GET two
+        SET data
+        LIT 1
+        JNZ next
+op-set:
+        GET 5
+        PUT 6
+        LIT 1
+        JNZ next
+op-put:
+        GET 5
+        PUT 7
+        LIT 1
+        JNZ next
+op-sub:
+        GET 5
+        SUB 1
+        SET data
+        LIT 1
+        JNZ next
+op-cgt:
+        GET 5
+        CGT 1
+        SET data
+        LIT 1
+        JNZ next
+op-jnz:
+        GET 5
+        JNZ set-ip
+next:
+        LIT -1
+        SUB 3
+        SET 3
+        JNZ loop
+set-ip:
+        GET six
+        SET 3
+six:
+        JNZ loop
+op-inp:
+        INP
+        SET data
+        LIT 1
+        JNZ loop
+op-out:
+        GET 5
+        OUT
+        LIT 1
+        JNZ loop
+op-end:
+        END
+
+        DAT op-end op-out op-inp op-jnz op-cgt op-sub op-put op-set op-get
+jumps:
+        DAT op-lit
+
+data:
+        DAT 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+program:
+        

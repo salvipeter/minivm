@@ -13,6 +13,9 @@ The virtual machine is simple, but quite expressive - it can
 Even [recursion](src/hanoi.src) can be done
 with a little magic.
 
+A [universal machine](src/umvm.src) can emulate itself, i.e.,
+it can run (short) MiniVM programs.
+
 ![Some examples](img/demos.png)
 
 The 240-byte file size limit is just enough for a "Code 39" (ISO/IEC 16388:2023)
