@@ -1,0 +1,41 @@
+;;; vim: set ft=asm: -*- mode: asm -*-
+
+;;; Universal Mini Virtual Machine - cheating version
+;;; Reads a 220-byte program from the standard input and runs it.
+;;; The program is not interpreted: the UMVM just jumps to its code.
+
+;;; Usage:
+;;;   { dd if=program.mvm bs=220 conv=sync status=none; cat; } | minivm umvm-cheating.mvm
+;;; (An extra RET is needed at the exit for cat to find out that stdin ended.)
+
+start:
+        LIT 1
+        JNZ reader
+        DAT 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+        DAT 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+        DAT 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+        DAT 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+        DAT 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+        DAT 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+        DAT 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+        DAT 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+        DAT 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+        DAT 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+        DAT 0 0 0 0 0 0 0
+reader:
+        LIT 220
+        SET 1
+        LIT start
+        SET 2
+loop:
+        INP
+        PUT 2
+        LIT -1
+        SUB 2
+        SET 2
+        LIT 1
+        SUB 1
+        SET 1
+        JNZ loop
+        LIT 1
+        JNZ start
