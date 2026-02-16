@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Virtual Machine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            line-height: 1.4;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+            height: calc(100vh - 40px);
+            max-height: calc(100vh - 40px);
+            overflow: hidden;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: #0a0a0a;
+            border: 3px solid #00ff00;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            letter-spacing: 8px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .header .subtitle {
+            font-size: 12px;
+            color: #00aa00;
+            margin-top: 5px;
+        }
+
+        .memory-panel {
+            background: #0a0a0a;
+            border: 3px solid #00ff00;
+            padding: 8px;
+            box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.1);
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .memory-panel h2 {
+            font-size: 12px;
+            margin-bottom: 8px;
+            text-align: center;
+            padding: 4px;
+            background: #00ff00;
+            color: #000;
+            flex-shrink: 0;
+        }
+
+        .memory-table-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .memory-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .memory-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .memory-table th {
+            background: #003300;
+            padding: 3px 2px;
+            border: 1px solid #00ff00;
+            font-size: 11px;
+        }
+
+        .memory-table td {
+            padding: 2px 4px;
+            border: 1px solid #004400;
+            font-size: 11px;
+        }
+
+        .memory-table td:first-child {
+            background: #002200;
+            text-align: center;
+            font-weight: bold;
+            width: 38px;
+            font-size: 11px;
+        }
+
+        .memory-table td:nth-child(2) {
+            width: 30px;
+            padding: 0px;
+        }
+
+        .memory-table td:nth-child(3) {
+            width: 38px;
+            font-size: 10px;
+            padding: 2px;
+            text-align: center;
+        }
+
+        .memory-table input {
+            width: 100%;
+            background: #000;
+            color: #00ff00;
+            border: 1px solid #004400;
+            padding: 2px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            text-align: center;
+            caret-color: transparent;
+        }
+
+        .memory-table input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+            background: #00ff00;
+            color: #000;
+        }
+
+        .memory-table .annotation {
+            color: #00aa00;
+            font-size: 11px;
+        }
+
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .controls {
+            background: #0a0a0a;
+            border: 3px solid #00ff00;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        .control-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .control-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-row label {
+            min-width: 100px;
+            font-size: 12px;
+        }
+
+        button {
+            background: #003300;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 8px 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        button:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        select {
+            background: #000;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 6px 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            flex: 1;
+        }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #00ff00;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .terminal {
+            background: #000;
+            border: 3px solid #00ff00;
+            padding: 15px;
+            flex: 1;
+            min-height: 0;
+            max-height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            font-size: 14px;
+            position: relative;
+            box-shadow: inset 0 0 30px rgba(0, 255, 0, 0.1);
+        }
+
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 255, 0, 0.03) 0px,
+                rgba(0, 255, 0, 0.03) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+        }
+
+        .terminal-content {
+            position: relative;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 100%;
+        }
+
+        .terminal-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 16px;
+            background: #00ff00;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+
+        .base64-panel {
+            grid-column: 1 / -1;
+            background: #0a0a0a;
+            border: 3px solid #00ff00;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            min-height: 0;
+        }
+
+        .base64-panel h2 {
+            font-size: 12px;
+            margin-bottom: 10px;
+            color: #00ff00;
+        }
+
+        .base64-input {
+            width: 100%;
+            background: #000;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .base64-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .status {
+            font-size: 11px;
+            color: #00aa00;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>◆ MINI VM ◆</h1>
+            <div class="subtitle">256-BYTE VIRTUAL MACHINE • 8-BIT ADDRESSING</div>
+        </div>
+
+        <div class="memory-panel">
+            <h2>MEMORY MAP</h2>
+            <div class="memory-table-wrapper">
+                <table class="memory-table">
+                    <thead>
+                        <tr>
+                            <th>ADDR</th>
+                            <th>DATA</th>
+                            <th>NOTE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="memoryTable">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="main-panel">
+            <div class="controls">
+                <div class="control-row">
+                    <label>PROGRAM:</label>
+                    <select id="programSelect">
+                        <option value="">[ SELECT PROGRAM ]</option>
+                    </select>
+                    <button id="loadBtn">LOAD</button>
+                </div>
+                <div class="control-row">
+                    <button id="runBtn">▶ RUN</button>
+                    <button id="stopBtn" disabled>■ STOP</button>
+                    <button id="clearBtn">CLEAR MEMORY</button>
+                    <button id="clearTermBtn">CLEAR TERMINAL</button>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="echoCheckbox" checked>
+                        <span>ECHO INPUT</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="terminal">
+                <div class="terminal-content" id="terminalContent"></div>
+            </div>
+        </div>
+
+        <div class="base64-panel">
+            <h2>BASE64 PROGRAM DATA (BYTES 10-FF)</h2>
+            <textarea class="base64-input" id="base64Input" placeholder="Paste base64 encoded program here..."></textarea>
+            <div class="status" id="base64Status"></div>
+        </div>
+    </div>
+
+    <script>
+        // Instruction names
+        const INSTRUCTIONS = {
+            0: 'LIT', 1: 'GET', 2: 'SET', 3: 'PUT', 4: 'SUB',
+            5: 'CGT', 6: 'JNZ', 7: 'INP', 8: 'OUT', 9: 'END'
+        };
+
+        // Predefined programs
+        const PROGRAMS = {
+            'BINHEX': 'AAACBAAEAQACAQAgAgIGOwAgCAAEAQACAQAvAgIGYgAKCAD/BAQCBAYUCQAIAgMAgAUBBkkAMAZLADEIAUwEVAQBAgEAAQQDAgMGPwFSAmEGAAAAAgMAEAUBBpAACgUDBnYA0AZ4AMkEAwgACgUBBoUA\n0AaHAMkEAQgBjAKPBgAAEAQBAgEA/wQDAgMGZg==',
+            'CODE39': 'AJYCAQD/BAECAQcDAQSNBhQAZAIHAJYCAQEBAgMAvwIEAOsCBQAFAgYBBAQDBqcABQICACMIAQUEAgZPACMIAP8EBQEABAIGXAAjCAAgCAH3BAYGbQEFBncAAQZ6AQUGegH3BewGegAgCAABBAICAgZD\nAP8EAQIBAQEGKQAKCAQHAgcGJQkKAAAAAAAAAAAAAAAAAAAAAAD/BAQCBAABBAYCBgTsBjkA/gQFAgUGNVUxQUtWMkJMVzNDTVg0RE5ZNUVPWjZGUC03R1EuOEhSIDlJUwowSlQlKy8kBQEEAQUEAwEF\nAwQDAgEFAgQCAwIA',
+            'ECHO': 'BwgGEAk=',
+            'HANOI': 'APUCAQEBCAD/BAECAQEBBhYHAg8AMAQPAg8GMgADAg8GOAAJBQ8GLAACAgEAQQILAEMCDABCAg0ATgMBBk8JAA8BAAZZAAEG7wD/BAECAQABBA8CDwAMAQACDgANAQACDAAOAQACDQB9AwEGTwAMAQAC\nDgANAQACDAAOAQACDQAKCABbCADPBA8IAF0IADoIACAIAAsBAAgAIAgALQgAPggAIAgADAEACAALAQACDgANAQACCwAOAQACDQDRAwEGTwALAQACDgANAQACCwAOAQACDQABBAECAQD/BA8CDwEBAvQG\nAGRlcHRoKDw5KT0A',
+            'HELLO': 'ACICAQEBCAD/BAECAQEABhYJIEhlbGxvIFdvcmxkISAKAA==',
+            'MOIRE': 'AAACCQAgAgEAQAICAAIBAAQJBAECAwACAQAEAQIFAAkFAwY/AAMBAAZJACMIBmgACQQDAgMAAQYuAA0FBQZeAAUBAAZZAAEGOgAuCAZoAA0EBQIFAAEGSQABBAICAgYcAAoIAAEEAQIBBhgJ',
+            'PASCAL': 'APcCAQEBCAD/BAECAQEBBhYHAgQAMAQEAgQGMgAKAgQGOAAKBQQGLAAAAgUACggAAAIPAgYA9gQPBAYCBwEHAgEAAAICAgMAZAUBBnAAAgEABmcAAQZ+ANAEAggAAQZ+AGQEAQIBAP8EAgICBlcACgUB\nBpcAAwEABo4AAQalANAEAwgAAQalAAoEAQIBAP8EAwIDBn4A0AQBCAAgCAD/BAYCBgUFBkUA9wIHAAECCAIGBQUGyQABBucBBwIJBA8ECAMHAAkBAAIIAP8EBwIHAP8EBgIGBsEAAQMHAP8EBQIFBAQG\nPAkBWzEtOV06ICAA',
+            'PITAGORASZ': 'AAACAQAAAgIAAgEAAgMAUgQBBAMCBAEECAAgCAD/BAMCAwAKBAMGPAAAAgMAAgEABAMGHgD/BAICAgAKCAQCBhgJUGl0YWdvcmFzeg==',
+            'QUINE': 'ABACAQEUAgQAHgLNBp4AOggACQgBAQICAgQACgUCBn8A3AIDARIGZgEDCAD/BAMCAwEDCAD/BAMCAwEDCAAHBQQGdAAgCAD/BAECAQEBAgQAdALNBp4AAQQCAgIA/QQDAgMGNAAKCAD/BAECAQYUAFMI\nAFQIAFIIACAIAQEIAP8EAQIBAPoEAQaLAAoICQAwCAB4CAAAAgMAEAUEBs4ACgUDBrgA0Aa6AMkEAwgACgUEBscA0AbJAMkEBAgGAAAQBAQCBAD/BAMCAwaoTElUR0VUU0VUUFVUU1VCQ0dUSk5aSU5Q\nT1VURU5E',
+            'QR': 'AAACCQBoAgMAAAIBAAACAgEDAgUACAIEAIAFBQYyACAGNAAjCAgABQEABAkEBQIFAAEEBAIEBigA/wQDAgMA/wQCAgIEZgYgAAoIAP8EAQIBBGcGHAkEIAAAAAAAAAAAP5Ok/iCO7IIuu4i6Lp2Iui6I\n3LogkVaCP6qq/gA7vAA77JOILmy6ki7xCa4WZFBkAqJxlh8XM5IlpqC2Fku7lCD09tYPBLmaI5kBZhtUV/Qt8nfgADc2Lj+2hrYgo/o0Lrzz5i6cum4uuRxyIKQ3JD+if2YAAAAA',
+            'RULE90': 'ACACAgB2AgEBAQgA/wQBAgEBAQYaAHYCAwD/BAMCBAD/BAQCBQEDAggBBQIGAAoEBgZHAAEGbQEEAgcBBQQIBlUALgZXACMDBAAFAQACBAD/BAUCBQAHAQACCAY5AAEEAgICBhQJLi4uLi4uLi4uLi4u\nLi4uLi4uLi4uLi4uLi4uLi4uLi4jLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4KAA==',
+            'SPATCH': 'ANcCCgEKBiQHAgEAMAQBAgEHBi0IAP8ECgIKBhQA6gIKAQoGQQcCAgAwBAICAgcGSggA/wQKAgoGMQD3AgMGgwHOBL8EAwIFAdAGcwEFBL8EAgICAAADBQABBAQCBATABlAJAQUCBgD/BAYDBQABBAIC\nAgABBAECBAS/BAMCBQHQAwUAAQIGAPcCBQEFAgcA0AQHCAD/BAUCBQAsCAAgCAEFAgcA0AQHCAD/BAUCBQD/BAYCBgQBBqoACggAAQQEAgQEwAZQCSMgb2Ygc2lkZXMgKDMtOSk/IABEZXB0aCAoMS05\nKT8gAAAAAAAAAAAA',
+            'SPIRAL': 'AAACCQABAggCBgCoAgoAzAQKBiUJAMwCAQEkAgIAMwIDBtYBCgILAIAFCwZFANMCAQEKBk0AzgIBAQoE6AICAFUCAwbWANECAQEkAgIBbwZnAAEEAgICAG0CAwbWAAoIAZoGnAFvBnwAAQZ+AP8ECQIJ\nABIFCQaMAAEGkAAAAggAAQIGAP8ECgIKBh4AAAIGAQoE6AMKBh65vcHFyc3R1dnd4eXp7fH1+f0BBQkNERUZHSElKS0xNTk9QUUjIyAgACAgIyMAAewCBAbgAAEG8AHwAgUBBQb2AAEEBAIEBuABpAL1\nBgAIAP8EBQIFBuQ=',
+        };
+
+        // VM State
+        let memory = new Array(256).fill(null); // null = unset, number = set value
+        // Initialize memory[0-15] to 0 (communication area and accumulator)
+        for (let i = 0; i < 16; i++) {
+            memory[i] = 0;
+        }
+        let running = false;
+        let ip = 16;
+        let inputBuffer = [];
+
+        // Initialize
+        function init() {
+            renderMemoryTable();
+            populateProgramSelect();
+            attachEventListeners();
+            updateBase64FromMemory();
+        }
+
+        function renderMemoryTable() {
+            const tbody = document.getElementById('memoryTable');
+            tbody.innerHTML = '';
+            
+            for (let i = 16; i < 256; i++) {
+                const row = document.createElement('tr');
+                
+                // Address
+                const addrCell = document.createElement('td');
+                addrCell.textContent = i.toString(16).toUpperCase().padStart(2, '0');
+                row.appendChild(addrCell);
+                
+                // Data input
+                const dataCell = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 2;
+                input.value = '--';
+                input.dataset.addr = i;
+                input.dataset.cursorPos = '0';
+                input.addEventListener('keydown', handleMemoryKeydown);
+                input.addEventListener('focus', handleMemoryFocus);
+                input.addEventListener('blur', handleMemoryBlur);
+                input.addEventListener('click', handleMemoryClick);
+                dataCell.appendChild(input);
+                row.appendChild(dataCell);
+                
+                // Annotation
+                const noteCell = document.createElement('td');
+                noteCell.className = 'annotation';
+                noteCell.dataset.addr = i;
+                row.appendChild(noteCell);
+                
+                tbody.appendChild(row);
+            }
+        }
+
+        function handleMemoryFocus(e) {
+            const input = e.target;
+            input.dataset.cursorPos = '0';
+            input.select();
+        }
+
+        function handleMemoryClick(e) {
+            e.preventDefault();
+            e.target.select();
+        }
+
+        function handleMemoryKeydown(e) {
+            const input = e.target;
+            const addr = parseInt(input.dataset.addr);
+            const cursorPos = parseInt(input.dataset.cursorPos);
+            
+            // Handle hex digit input (overwrite mode)
+            if (/^[0-9A-Fa-f]$/.test(e.key)) {
+                e.preventDefault();
+                const digit = e.key.toUpperCase();
+                let currentValue = input.value;
+                
+                // If showing --, start fresh
+                if (currentValue === '--') {
+                    currentValue = '00';
+                }
+                
+                // Overwrite at cursor position
+                if (cursorPos === 0) {
+                    currentValue = digit + currentValue.charAt(1);
+                    input.value = currentValue;
+                    input.dataset.cursorPos = '1';
+                } else {
+                    currentValue = currentValue.charAt(0) + digit;
+                    input.value = currentValue;
+                    // Commit the value
+                    memory[addr] = parseInt(currentValue, 16);
+                    updateAnnotation(addr);
+                    updateBase64FromMemory();
+                    // Move to next cell
+                    const nextInput = document.querySelector(`input[data-addr="${addr + 1}"]`);
+                    if (nextInput) {
+                        nextInput.focus();
+                    } else {
+                        input.blur();
+                    }
+                }
+                input.select();
+            }
+            // Handle backspace
+            else if (e.key === 'Backspace') {
+                e.preventDefault();
+                if (cursorPos === 1) {
+                    input.dataset.cursorPos = '0';
+                } else {
+                    // Go to previous cell
+                    const prevInput = document.querySelector(`input[data-addr="${addr - 1}"]`);
+                    if (prevInput) {
+                        prevInput.focus();
+                        prevInput.dataset.cursorPos = '1';
+                    }
+                }
+                input.select();
+            }
+            // Handle delete or dash (clear cell)
+            else if (e.key === 'Delete' || e.key === '-') {
+                e.preventDefault();
+                memory[addr] = null;
+                input.value = '--';
+                input.dataset.cursorPos = '0';
+                updateAnnotation(addr);
+                updateBase64FromMemory();
+                input.select();
+            }
+            // Handle Enter (commit and move to next)
+            else if (e.key === 'Enter') {
+                e.preventDefault();
+                const nextInput = document.querySelector(`input[data-addr="${addr + 1}"]`);
+                if (nextInput) {
+                    nextInput.focus();
+                } else {
+                    input.blur();
+                }
+            }
+            // Handle arrow keys
+            else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const nextInput = document.querySelector(`input[data-addr="${addr + 1}"]`);
+                if (nextInput) nextInput.focus();
+            }
+            else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const prevInput = document.querySelector(`input[data-addr="${addr - 1}"]`);
+                if (prevInput) prevInput.focus();
+            }
+            else if (e.key === 'Tab') {
+                // Allow default tab behavior
+            }
+            // Prevent all other input
+            else if (e.key.length === 1) {
+                e.preventDefault();
+            }
+        }
+
+        function handleMemoryBlur(e) {
+            const input = e.target;
+            const addr = parseInt(input.dataset.addr);
+            
+            // Ensure display is correct on blur
+            if (memory[addr] === null) {
+                input.value = '--';
+            } else {
+                input.value = memory[addr].toString(16).toUpperCase().padStart(2, '0');
+            }
+            input.dataset.cursorPos = '0';
+        }
+
+        function updateAnnotation(addr) {
+            const noteCell = document.querySelector(`.annotation[data-addr="${addr}"]`);
+            const value = memory[addr];
+            
+            let annotation = '';
+            
+            // Only annotate if value is set (not null)
+            if (value !== null) {
+                // Instruction name
+                if (INSTRUCTIONS[value] !== undefined) {
+                    annotation = INSTRUCTIONS[value];
+                }
+                
+                // Printable character
+                if (value >= 32 && value <= 126) {
+                    const char = String.fromCharCode(value);
+                    annotation += (annotation ? ' ' : '') + '"' + char + '"';
+                }
+            }
+            
+            noteCell.textContent = annotation;
+        }
+
+        function updateMemoryDisplay() {
+            for (let i = 16; i < 256; i++) {
+                const input = document.querySelector(`input[data-addr="${i}"]`);
+                if (memory[i] === null) {
+                    input.value = '--';
+                } else {
+                    input.value = memory[i].toString(16).toUpperCase().padStart(2, '0');
+                }
+                updateAnnotation(i);
+            }
+        }
+
+        function updateBase64FromMemory() {
+            // Find last set byte
+            let lastByte = 15;
+            for (let i = 255; i >= 16; i--) {
+                if (memory[i] !== null) {
+                    lastByte = i;
+                    break;
+                }
+            }
+            
+            if (lastByte < 16) {
+                document.getElementById('base64Input').value = '';
+                document.getElementById('base64Status').textContent = 'Empty program';
+                return;
+            }
+            
+            // Convert to bytes, treating null as 0
+            const programBytes = [];
+            for (let i = 16; i <= lastByte; i++) {
+                programBytes.push(memory[i] === null ? 0 : memory[i]);
+            }
+            
+            const base64 = btoa(String.fromCharCode.apply(null, programBytes));
+            document.getElementById('base64Input').value = base64;
+            document.getElementById('base64Status').textContent = `${lastByte - 15} bytes encoded`;
+        }
+
+        function updateMemoryFromBase64() {
+            const base64Input = document.getElementById('base64Input');
+            const base64 = base64Input.value.trim();
+            
+            if (!base64) {
+                document.getElementById('base64Status').textContent = 'Empty';
+                return;
+            }
+            
+            try {
+                const decoded = atob(base64);
+                const bytes = new Uint8Array(decoded.length);
+                for (let i = 0; i < decoded.length; i++) {
+                    bytes[i] = decoded.charCodeAt(i);
+                }
+                
+                // Clear program area
+                for (let i = 16; i < 256; i++) {
+                    memory[i] = null;
+                }
+                
+                // Load new program - all bytes from base64 are "set", even if 0
+                for (let i = 0; i < bytes.length && i < 240; i++) {
+                    memory[16 + i] = bytes[i];
+                }
+                
+                updateMemoryDisplay();
+                document.getElementById('base64Status').textContent = `${bytes.length} bytes loaded`;
+            } catch (e) {
+                document.getElementById('base64Status').textContent = 'Invalid base64';
+            }
+        }
+
+        function populateProgramSelect() {
+            const select = document.getElementById('programSelect');
+            for (const [name, base64] of Object.entries(PROGRAMS)) {
+                const option = document.createElement('option');
+                option.value = base64;
+                option.textContent = name;
+                select.appendChild(option);
+            }
+        }
+
+        function attachEventListeners() {
+            document.getElementById('loadBtn').addEventListener('click', loadProgram);
+            document.getElementById('runBtn').addEventListener('click', runProgram);
+            document.getElementById('stopBtn').addEventListener('click', stopProgram);
+            document.getElementById('clearBtn').addEventListener('click', clearMemory);
+            document.getElementById('clearTermBtn').addEventListener('click', clearTerminal);
+            document.getElementById('base64Input').addEventListener('input', updateMemoryFromBase64);
+            document.addEventListener('keydown', handleDocumentKeydown);
+        }
+
+        function handleDocumentKeydown(e) {
+            // Don't capture input if any form element is focused
+            if (e.target.tagName === 'INPUT' || 
+                e.target.tagName === 'TEXTAREA' || 
+                e.target.tagName === 'BUTTON' ||
+                e.target.tagName === 'SELECT') {
+                return;
+            }
+            
+            // Capture input when program is running (allows type-ahead)
+            if (running) {
+                if (e.key.length === 1) {
+                    // Regular character
+                    e.preventDefault();
+                    inputBuffer.push(e.key);
+                } else if (e.key === 'Enter') {
+                    // Enter key as newline
+                    e.preventDefault();
+                    inputBuffer.push('\n');
+                }
+            }
+        }
+
+        function loadProgram() {
+            const select = document.getElementById('programSelect');
+            const base64 = select.value;
+            if (base64) {
+                document.getElementById('base64Input').value = base64;
+                updateMemoryFromBase64();
+            }
+        }
+
+        function clearMemory() {
+            for (let i = 16; i < 256; i++) {
+                memory[i] = null;
+            }
+            updateMemoryDisplay();
+            updateBase64FromMemory();
+        }
+
+        function clearTerminal() {
+            document.getElementById('terminalContent').textContent = '';
+        }
+
+        function writeToTerminal(text) {
+            const content = document.getElementById('terminalContent');
+            const terminal = content.parentElement;
+            content.textContent += text;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        async function runProgram() {
+            running = true;
+            ip = 16;
+            inputBuffer = [];
+            document.getElementById('runBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            
+            writeToTerminal('>>> PROGRAM START\n');
+            
+            try {
+                await executeProgram();
+                writeToTerminal('\n>>> PROGRAM END\n\n');
+            } catch (e) {
+                writeToTerminal(`\n>>> ERROR: ${e.message}\n\n`);
+            }
+            
+            running = false;
+            inputBuffer = [];
+            document.getElementById('runBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+        }
+
+        function stopProgram() {
+            running = false;
+            inputBuffer = [];
+            writeToTerminal('\n>>> STOPPED BY USER\n\n');
+            document.getElementById('runBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+        }
+
+        // Helper to get memory value (treat null as 0)
+        function getMem(addr) {
+            return memory[addr] === null ? 0 : memory[addr];
+        }
+
+        // Helper to set memory value
+        function setMem(addr, value) {
+            memory[addr] = value & 0xFF;
+        }
+
+        async function executeProgram() {
+            let cycleCount = 0;
+            while (running && getMem(ip) !== 9) {
+                const opcode = getMem(ip);
+                const arg = getMem((ip + 1) & 0xFF);
+
+                // Yield to UI occasionally (every 1000 instructions)
+                if (++cycleCount % 1000 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+
+                switch (opcode) {
+                    case 0: // LIT
+                        setMem(0, arg);
+                        ip += 2;
+                        break;
+                    case 1: // GET
+                        setMem(0, getMem(getMem(arg)));
+                        ip += 2;
+                        break;
+                    case 2: // SET
+                        setMem(arg, getMem(0));
+                        ip += 2;
+                        break;
+                    case 3: // PUT
+                        setMem(getMem(arg), getMem(0));
+                        ip += 2;
+                        break;
+                    case 4: // SUB
+                        setMem(0, getMem(arg) - getMem(0));
+                        ip += 2;
+                        break;
+                    case 5: // CGT
+                        if (getMem(0) > getMem(arg)) {
+                            setMem(0, 0);
+                        }
+                        ip += 2;
+                        break;
+                    case 6: // JNZ
+                        if (getMem(0) !== 0) {
+                            ip = arg;
+                        } else {
+                            ip += 2;
+                        }
+                        break;
+                    case 7: // INP
+                        setMem(0, await getInput());
+                        ip += 1;
+                        break;
+                    case 8: // OUT
+                        writeToTerminal(String.fromCharCode(getMem(0)));
+                        ip += 1;
+                        break;
+                    default:
+                        throw new Error(`Invalid opcode ${opcode} at address ${ip}`);
+                }
+                ip &= 0xFF;
+            }
+        }
+
+        function getInput() {
+            return new Promise((resolve) => {
+                const checkBuffer = () => {
+                    if (inputBuffer.length > 0) {
+                        const char = inputBuffer.shift();
+                        const charCode = char.charCodeAt(0);
+                        
+                        // Echo input if checkbox is checked
+                        if (document.getElementById('echoCheckbox').checked) {
+                            writeToTerminal(char);
+                        }
+                        
+                        resolve(charCode);
+                    } else if (running) {
+                        setTimeout(checkBuffer, 50);
+                    }
+                };
+                
+                checkBuffer();
+            });
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
