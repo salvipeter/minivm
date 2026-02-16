@@ -35,6 +35,8 @@ There is a [disassembler](disasm.c) written by an AI - but it can be
 done even in the machine itself: a [quine example](src/quine.src)
 prints its own (disasembled) source code.
 
+Finally, there is a [JavaScript version](minivm.html) that runs in your browser (also vibe-coded).
+
 ## The Next Step?
 
 For a not-so-minimal version, consider (for example) the following:
